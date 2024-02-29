@@ -1,5 +1,5 @@
 # PDTOPSIS-Sort
-PDTOPSIS-Sort, algorithm to support Multi-Criteria Decision Making (MCDM)
+Preference Disaggregation Technique for Order Preferences by  Similarity to Ideal Solution (PDTOPSIS) - Sort, algorithm to support Multi-Criteria Decision Making (MCDM)
 
 ## Team
 - baas@cin.ufpe.br
