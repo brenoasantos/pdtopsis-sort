@@ -17,16 +17,21 @@ class PDTOPSIS:
         self.decision_matrix = pd.read_csv(self.csv_filepath)
         # A matriz de decisão deve ser um DataFrame com alternativas nas linhas e critérios nas colunas
 
-    def define_reference_set(self):
-        # Implementar a seleção ou criação do conjunto de referência
-        # Este é um placeholder e precisa ser personalizado de acordo com a entrada do usuário ou outro critério
-        self.reference_set = self.decision_matrix.sample(n=5)  # Exemplo: selecionar 5 alternativas
-
+    def define_reference_set(self, reference_indices=None, reference_data=None):
+        if reference_data is not None:
+            self.reference_set = reference_data
+        elif reference_indices is not None:
+            self.reference_set = self.decision_matrix.iloc[reference_indices]
+        else:
+            raise ValueError("You must provide reference indices or reference data.")
+    
     def determine_domain(self):
-        # Encontrar o máximo e mínimo de cada critério
-        max_values = np.max(self.decision_matrix, axis=0)
-        min_values = np.min(self.decision_matrix, axis=0)
-        self.domain = {'ideal': max_values, 'anti_ideal': min_values}
+        # Supondo que o domínio não é fornecido, calculamos com base na matriz de decisão.
+        # Caso contrário, esta função pode ser atualizada para aceitar domínios fornecidos.
+        self.domain = {
+            'ideal': self.decision_matrix.max(),
+            'anti_ideal': self.decision_matrix.min()
+        }
 
     def infer_parameters(self):
         # Placeholder para a inferência de parâmetros
@@ -39,11 +44,54 @@ class PDTOPSIS:
         print("Weights:", self.weights)
         print("Profiles:", self.profiles)
 
-    def classify_alternatives(self):
-        # Este é um placeholder para a lógica de classificação
-        # A implementação real dependeria da matriz de decisão completa e dos parâmetros inferidos
-        pass
+    def calculate_complete_decision_matrix(self, decision_matrix, boundary_profiles, domain):
+        """
+        Step 6.1: Create the Complete Decision Matrix by concatenating the decision matrix,
+        the boundary profiles, and the domain.
+        """
+        self.complete_decision_matrix = np.vstack((decision_matrix, boundary_profiles, domain))
 
+    def normalize_decision_matrix(self):
+        """
+        Step 6.2: Normalize the Complete Decision Matrix.
+        """
+        self.normalized_decision_matrix = self.complete_decision_matrix / self.complete_decision_matrix.max(axis=0)
+
+    def calculate_weighted_normalized_decision_matrix(self, weights):
+        """
+        Step 6.3: Calculate the weighted and normalized Decision Matrix.
+        """
+        self.weighted_normalized_decision_matrix = self.normalized_decision_matrix * weights
+
+    def determine_ideal_and_anti_ideal_solutions(self, beneficial_criteria, cost_criteria):
+        """
+        Step 6.4: Determine the ideal and anti-ideal solutions.
+        """
+        self.v_star = np.max(self.weighted_normalized_decision_matrix[:, beneficial_criteria], axis=0)
+        self.v_star = np.concatenate((self.v_star, np.min(self.weighted_normalized_decision_matrix[:, cost_criteria], axis=0)))
+
+        self.v_minus = np.min(self.weighted_normalized_decision_matrix[:, beneficial_criteria], axis=0)
+        self.v_minus = np.concatenate((self.v_minus, np.max(self.weighted_normalized_decision_matrix[:, cost_criteria], axis=0)))
+
+    def calculate_distances(self):
+        """
+        Step 6.5: Calculate the Euclidean distances from each alternative and profile to the ideal and anti-ideal solutions.
+        """
+        self.distances_to_ideal = np.sqrt(np.sum((self.weighted_normalized_decision_matrix - self.v_star) ** 2, axis=1))
+        self.distances_to_anti_ideal = np.sqrt(np.sum((self.weighted_normalized_decision_matrix - self.v_minus) ** 2, axis=1))
+
+    def calculate_closeness_coefficients(self):
+        """
+        Step 6.6: Calculate the closeness coefficients of each alternative and profile.
+        """
+        self.closeness_coefficients = self.distances_to_anti_ideal / (self.distances_to_ideal + self.distances_to_anti_ideal)
+
+    def classify_alternatives(self, profiles_closeness_coefficients):
+        """
+        Step 6.7: Classify the alternatives by making comparisons between their closeness coefficients.
+        """
+        self.classifications = np.digitize(self.closeness_coefficients, profiles_closeness_coefficients)
+    
     def sensitivity_analysis(self):
         # Placeholder para análise de sensibilidade
         pass
