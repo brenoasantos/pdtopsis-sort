@@ -7,3 +7,6 @@ Preference Disaggregation Technique for Order Preferences by  Similarity to Idea
 - grcc@cin.ufpe.br
 - mmmj@cin.ufpe.br
 - mldm@cin.ufpe.br
+
+## Run application
+`streamlit run interface.py`

@@ -7,38 +7,55 @@ class PDTOPSIS_Sort:
         self.matrix_values_csv = matrix_values_filepath
         self.input_csv = input_filepath
         self.decision_matrix = None
-        self.reference_set = []
+        self.reference_set = None
         self.domain = None
         self.weights = None
         self.profiles = None
 
-        # carregar a matriz de decisão do arquivo CSV
+        # load data
         self.load_data()
 
     def load_data(self):
-        # carrega os dados do arquivo CSV para a matriz de decisão
-        # a matriz de decisão deve ser um DataFrame com alternativas nas linhas e critérios nas colunas
-        self.decision_matrix = pd.read_csv(self.matrix_values_csv, delimiter=';', header=None)
-        self.inputs = pd.read_csv(self.input_csv, delimiter=';')
-
-        for index, row in self.inputs.iterrows():
-            if row.ref_alternatives != " ":
-                self.reference_set.append([row.ref_alternatives, row.ref_alt_class])
-    
+        try:
+            # carrega os dados do arquivo CSV com valores para a matriz de decisão (dataframe)
+            self.decision_matrix = pd.read_csv(self.matrix_values_csv, delimiter=';', header=None)
+            
+            # carrega os dados do arquivo CSV com inputs para um dataframe
+            self.inputs = pd.read_csv(self.input_csv, delimiter=';')
         
-        print(self.reference_set)
-    
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
+    def create_ref_set(self):
+        try:
+            self.reference_set = []
+
+            # cria/carrega a matrix contendo alternativas de referências e suas classes
+            for index, row in self.inputs.iterrows():
+                if row.ref_alternatives != " ":
+                    self.reference_set.append([row.ref_alternatives, row.ref_alt_class])
+
+        except Exception as e:
+            print(f"An error occurred: {e}")
+        
     def determine_domain(self):
-        # supondo que o domínio não é fornecido, calculamos com base na matriz de decisão.
-        # caso contrário, esta função pode ser atualizada para aceitar domínios fornecidos.
-        self.domain = {
-            'ideal': self.decision_matrix.max(),
-            'anti_ideal': self.decision_matrix.min()
-        }
+        try:
+            self.domain = {
+                'ideal': [],
+                'anti_ideal': []
+            }
+
+            # carrega o dicionário com valores máximos e mínimos de cada critério
+            for label, content in self.decision_matrix.items():
+                self.domain['ideal'].append(max(content))
+                self.domain['anti_ideal'].append(min(content))
+
+        except Exception as e:
+            print(f"An error occurred: {e}")
 
     def infer_parameters(self):
-        # Placeholder para a inferência de parâmetros
-        # Implementação real dependeria de técnicas de otimização
+        # placeholder para a inferência de parâmetros
+        # implementação real dependeria de técnicas de otimização
         self.weights = np.random.rand(self.decision_matrix.shape[1])  # Pesos aleatórios
         self.profiles = np.random.rand(self.decision_matrix.shape[1], 3)  # Três perfis fictícios
 
@@ -96,14 +113,15 @@ class PDTOPSIS_Sort:
         self.classifications = np.digitize(self.closeness_coefficients, profiles_closeness_coefficients)
     
     def sensitivity_analysis(self):
-        # Placeholder para análise de sensibilidade
+        # placeholder para análise de sensibilidade
         pass
 
     def run_algorithm(self):
-        # Executar todos os passos do algoritmo sequencialmente
+        # executar todos os passos do algoritmo sequencialmente
+        self.create_ref_set()
         self.determine_domain()
-        self.infer_parameters()
-        self.validate_parameters()
-        self.classify_alternatives()
-        self.sensitivity_analysis()
-        # Output final: apresentação dos resultados
+        # self.infer_parameters()
+        # self.validate_parameters()
+        # self.classify_alternatives()
+        # self.sensitivity_analysis()
+        # output final: apresentação dos resultados
