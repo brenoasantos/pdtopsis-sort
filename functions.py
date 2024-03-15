@@ -55,58 +55,57 @@ class PDTOPSIS_Sort:
             print(f"An error occurred: {e}")
 
     def infer_parameters(self):
-        n_criteria = self.decision_matrix.shape[1]  # Número de critérios
-        n_alternatives = self.decision_matrix.shape[0]  # Número de alternativas
-        n_reference = len(self.reference_set)  # Número de alternativas de referência
+        n_criteria = self.decision_matrix.shape[1]  # número de critérios
+        n_alternatives = self.decision_matrix.shape[0]  # número de alternativas
+        n_reference = len(self.reference_set)  # número de alternativas de referência
         
-        # Variáveis de decisão
+        # variáveis de decisão
         weights = cp.Variable(n_criteria, nonneg=True)
         boundary_profiles = cp.Variable((n_reference, n_criteria))
         
-        # Variáveis de erro para cada alternativa de referência
+        # variáveis de erro para cada alternativa de referência
         sigma_plus = cp.Variable(n_reference, nonneg=True)
         sigma_minus = cp.Variable(n_reference, nonneg=True)
 
-        # Obter os valores de classificação das alternativas de referência
+        # obter os valores de classificação das alternativas de referência
         ref_classes = np.array([ref[1] for ref in self.reference_set])
 
-        # Função objetivo: Minimizar a soma das variáveis de erro
+        # função objetivo: Minimizar a soma das variáveis de erro
         objective = cp.Minimize(cp.sum(sigma_plus) + cp.sum(sigma_minus))
 
-        # Restrições
+        # restrições
         constraints = []
 
-        # Restrições de pesos
+        # restrições de pesos
         constraints.append(cp.sum(weights) == 1)
 
-        # As alternativas de referência devem ser classificadas corretamente
-        # Assumindo que a classe 'C1' é a melhor e 'Cn' é a pior
+        # as alternativas de referência devem ser classificadas corretamente
+        # assumindo que a classe 'C1' é a melhor e 'Cn' é a pior
         for i, ref in enumerate(self.reference_set):
             ref_value = self.decision_matrix.iloc[i, :]
             class_index = np.where(ref_classes == ref[1])[0][0]
             
-            # As restrições exatas dependerão de como as classes são definidas no seu contexto
-            # Restrição para a classe superior (benefício)
+            # restrição para a classe superior (benefício)
             if ref[1] == 'C1':
                 constraints.append(boundary_profiles[class_index, :] * weights - ref_value <= sigma_plus[i])
-            # Restrição para a classe inferior (custo)
+            # restrição para a classe inferior (custo)
             elif ref[1] == 'Cn':
                 constraints.append(ref_value - boundary_profiles[class_index, :] * weights <= sigma_minus[i])
-            # Restrições para as classes intermediárias
+            # restrições para as classes intermediárias
             else:
                 constraints.append(boundary_profiles[class_index, :] * weights - ref_value <= sigma_plus[i])
                 constraints.append(ref_value - boundary_profiles[class_index - 1, :] * weights <= sigma_minus[i])
         
-        # Monotonicidade dos perfis de limite entre classes
+        # monotonicidade dos perfis de limite entre classes
         for j in range(n_criteria):
             for k in range(n_reference - 1):
                 constraints.append(boundary_profiles[k, j] >= boundary_profiles[k + 1, j])
 
-        # Resolver o problema
+        # resolver o problema
         problem = cp.Problem(objective, constraints)
         problem.solve()
 
-        # Armazenar os resultados
+        # armazenar os resultados
         self.weights = weights.value
         self.profiles = boundary_profiles.value
 
@@ -114,7 +113,7 @@ class PDTOPSIS_Sort:
         print("Inferred boundary profiles: ", self.profiles)
 
     def validate_parameters(self):
-        # Imprimir pesos e perfis para validação manual
+        # amprimir pesos e perfis para validação manual
         print('Weights:', self.weights)
         print('Profiles:', self.profiles)
 
