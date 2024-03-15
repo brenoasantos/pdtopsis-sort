@@ -112,11 +112,6 @@ class PDTOPSIS_Sort:
         print("Inferred weights: ", self.weights)
         print("Inferred boundary profiles: ", self.profiles)
 
-    def validate_parameters(self):
-        # amprimir pesos e perfis para validação manual
-        print('Weights:', self.weights)
-        print('Profiles:', self.profiles)
-
     def calculate_complete_decision_matrix(self, decision_matrix, boundary_profiles, domain):
         '''
         Step 6.1: Create the Complete Decision Matrix by concatenating the decision matrix,
