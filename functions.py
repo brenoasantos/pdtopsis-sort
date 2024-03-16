@@ -136,10 +136,7 @@ class PDTOPSIS_Sort:
         Step 6.4: Determine the ideal and anti-ideal solutions.
         '''
         self.v_star = np.max(self.weighted_normalized_decision_matrix[:, beneficial_criteria], axis=0)
-        self.v_star = np.concatenate((self.v_star, np.min(self.weighted_normalized_decision_matrix[:, cost_criteria], axis=0)))
-
         self.v_minus = np.min(self.weighted_normalized_decision_matrix[:, beneficial_criteria], axis=0)
-        self.v_minus = np.concatenate((self.v_minus, np.max(self.weighted_normalized_decision_matrix[:, cost_criteria], axis=0)))
 
     def calculate_distances(self):
         '''
@@ -227,9 +224,46 @@ class PDTOPSIS_Sort:
 
     def run_algorithm(self):
         # executar todos os passos do algoritmo sequencialmente
+
+        # carregar os dados de entrada
+        self.load_data()
+
+        # criar o conjunto de referência a partir dos dados de entrada
         self.create_ref_set()
+
+        # ceterminar o domínio ideal e anti-ideal
         self.determine_domain()
+
+        # inferir os pesos e perfis de limite
         self.infer_parameters()
-        self.classify_alternatives()
-        self.sensitivity_analysis()
-        # output final: apresentação dos resultados
+
+        # criar a matriz de decisão completa concatenando X, P e D
+        self.calculate_complete_decision_matrix(self.decision_matrix.values,
+                                            self.profiles,
+                                            np.array([self.domain['ideal'], self.domain['anti_ideal']]))
+
+        # normalizar a matriz de decisão completa                                    
+        self.normalize_decision_matrix()
+
+        # calcular a matriz de decisão ponderada e normalizada
+        self.calculate_weighted_normalized_decision_matrix(self.weights)
+
+        # definir os critérios de benefício
+        beneficial_criteria = [i for i in range(self.decision_matrix.shape[1])]
+
+        # determinar as soluções ideais e anti-ideais
+        self.determine_ideal_and_anti_ideal_solutions(beneficial_criteria)
+
+        # calcular as distâncias Euclidianas para cada alternativa e perfil
+        self.calculate_distances()
+
+        # calcular os coeficientes de proximidade para cada alternativa e perfil
+        self.calculate_closeness_coefficients()
+
+        # classificar as alternativas com base nos coeficientes de proximidade
+        classifications = self.classify_alternatives(self.profiles_closeness_coefficients)
+
+        # apresentar os resultados finais
+        for i, classification in enumerate(classifications):
+            print(f'Alternativa {i + 1}: Classe {classification}')
+
