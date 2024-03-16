@@ -20,10 +20,10 @@ class PDTOPSIS_Sort:
         try:
             # carrega os dados do arquivo CSV com valores para a matriz de decisão (dataframe)
             self.decision_matrix = pd.read_csv(self.matrix_values_csv, delimiter=';', header=None)
-            
+
             # carrega os dados do arquivo CSV com inputs para um dataframe
             self.inputs = pd.read_csv(self.input_csv, delimiter=';')
-        
+
         except Exception as e:
             print(f"An error occurred: {e}")
 
@@ -38,7 +38,7 @@ class PDTOPSIS_Sort:
 
         except Exception as e:
             print(f"An error occurred: {e}")
-        
+
     def determine_domain(self):
         try:
             self.domain = {
@@ -58,11 +58,11 @@ class PDTOPSIS_Sort:
         n_criteria = self.decision_matrix.shape[1]  # número de critérios
         n_alternatives = self.decision_matrix.shape[0]  # número de alternativas
         n_reference = len(self.reference_set)  # número de alternativas de referência
-        
+
         # variáveis de decisão
         weights = cp.Variable(n_criteria, nonneg=True)
         boundary_profiles = cp.Variable((n_reference, n_criteria))
-        
+
         # variáveis de erro para cada alternativa de referência
         sigma_plus = cp.Variable(n_reference, nonneg=True)
         sigma_minus = cp.Variable(n_reference, nonneg=True)
@@ -84,7 +84,7 @@ class PDTOPSIS_Sort:
         for i, ref in enumerate(self.reference_set):
             ref_value = self.decision_matrix.iloc[i, :]
             class_index = np.where(ref_classes == ref[1])[0][0]
-            
+
             # restrição para a classe superior (benefício)
             if ref[1] == 'C1':
                 constraints.append(boundary_profiles[class_index, :] * weights - ref_value <= sigma_plus[i])
@@ -95,7 +95,7 @@ class PDTOPSIS_Sort:
             else:
                 constraints.append(boundary_profiles[class_index, :] * weights - ref_value <= sigma_plus[i])
                 constraints.append(ref_value - boundary_profiles[class_index - 1, :] * weights <= sigma_minus[i])
-        
+
         # monotonicidade dos perfis de limite entre classes
         for j in range(n_criteria):
             for k in range(n_reference - 1):
@@ -150,14 +150,14 @@ class PDTOPSIS_Sort:
         self.distances_to_anti_ideal = []
         self.distances_to_ideal_profiles = []
         self.distances_to_anti_ideal_profiles = []
-        
+
         # Calcular as distâncias Euclidianas para cada alternativa (a_i)
         for i in range(self.m):  # m é o número de alternativas
             distance_to_ideal = np.sqrt(np.sum((self.weighted_normalized_decision_matrix[i, :] - self.v_star) ** 2))
             distance_to_anti_ideal = np.sqrt(np.sum((self.weighted_normalized_decision_matrix[i, :] - self.v_minus) ** 2))
             self.distances_to_ideal.append(distance_to_ideal)
             self.distances_to_anti_ideal.append(distance_to_anti_ideal)
-        
+
         # Calcular as distâncias Euclidianas para cada perfil (P_k)
         for k in range(self.q - 1):  # q é o número de perfis + 1
             profile_index = k + self.m  # Perfis são indexados após as alternativas na matriz completa
@@ -220,7 +220,7 @@ class PDTOPSIS_Sort:
 
         # Retornar as classificações ou manipulá-las conforme necessário
         return self.classifications
-    
+
     def sensitivity_analysis(self):
         # placeholder para análise de sensibilidade
         pass
@@ -229,8 +229,7 @@ class PDTOPSIS_Sort:
         # executar todos os passos do algoritmo sequencialmente
         self.create_ref_set()
         self.determine_domain()
-        # self.infer_parameters()
-        # self.validate_parameters()
-        # self.classify_alternatives()
-        # self.sensitivity_analysis()
+        self.infer_parameters()
+        self.classify_alternatives()
+        self.sensitivity_analysis()
         # output final: apresentação dos resultados
