@@ -66,8 +66,49 @@ if uploaded_files or os.listdir(input_folder_path):  # show button if files are 
             st.write('Determinando os domínios...')
             time.sleep(1)
 
-            domain_df = pd.DataFrame(pdtopsis_sort.determine_domain(), columns=['Ideal', 'Anti-ideal'])
+            domain_df = pd.DataFrame(pdtopsis_sort.determine_domain())
+            print(pdtopsis_sort.determine_domain())
             st.table(domain_df)
+
+            #fourth step
+            st.write('Inferindo pesos e perfis de limite...')
+            time.sleep(1)
+
+            pdtopsis_sort.infer_parameters()
+
+            #sixth step
+            st.write('Classificando as alternativas...')
+            time.sleep(1)
+
+            # criar a matriz de decisão completa concatenando X, P e D
+            pdtopsis_sort.calculate_complete_decision_matrix(pdtopsis_sort.decision_matrix.values,
+                                            pdtopsis_sort.profiles,
+                                            np.array([pdtopsis_sort.domain['ideal'], pdtopsis_sort.domain['anti_ideal']]))
+
+            # normalizar a matriz de decisão completa                                    
+            pdtopsis_sort.normalize_decision_matrix()
+
+            # calcular a matriz de decisão ponderada e normalizada
+            pdtopsis_sort.calculate_weighted_normalized_decision_matrix(pdtopsis_sort.weights)
+
+            # definir os critérios de benefício
+            beneficial_criteria = [i for i in range(pdtopsis_sort.decision_matrix.shape[1])]
+
+            # determinar as soluções ideais e anti-ideais
+            pdtopsis_sort.determine_ideal_and_anti_ideal_solutions(beneficial_criteria)
+
+            # calcular as distâncias Euclidianas para cada alternativa e perfil
+            pdtopsis_sort.calculate_distances()
+
+            # calcular os coeficientes de proximidade para cada alternativa e perfil
+            pdtopsis_sort.calculate_closeness_coefficients()
+
+            # classificar as alternativas com base nos coeficientes de proximidade
+            classifications = pdtopsis_sort.classify_alternatives(pdtopsis_sort.profiles_closeness_coefficients)
+
+            # apresentar os resultados finais
+            for i, classification in enumerate(classifications):
+                print(f'Alternativa {i + 1}: Classe {classification}')
 
             st.success('PDTOPSIS-Sort executed successfully!')
 
