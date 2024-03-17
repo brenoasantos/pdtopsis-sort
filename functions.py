@@ -17,13 +17,20 @@ class PDTOPSIS_Sort:
         self.load_data()
 
     def load_data(self):
-        try:
-            # carrega os dados do arquivo CSV com valores para a matriz de decisão (dataframe)
-            self.decision_matrix = pd.read_csv(self.matrix_values_csv, delimiter=';', header=None)
-
+        try:          
             # carrega os dados do arquivo CSV com inputs para um dataframe
             self.inputs = pd.read_csv(self.input_csv, delimiter=';')
+            
+            # carrega os dados do arquivo CSV com valores para a matriz de decisão (dataframe)
+            columns = []
+            columns.append(value for value in self.inputs.crit_code.tolist() if value != ' ')
+            
+            print(columns)
+            self.decision_matrix = pd.read_csv(self.matrix_values_csv, delimiter=';', header=None)
+            self.decision_matrix = pd.DataFrame(self.decision_matrix, columns=columns)
 
+            return self.decision_matrix
+        
         except Exception as e:
             print(f"An error occurred: {e}")
 
@@ -36,6 +43,8 @@ class PDTOPSIS_Sort:
                 if row.ref_alternatives != " ":
                     self.reference_set.append([row.ref_alternatives, row.ref_alt_class])
 
+            return self.reference_set
+        
         except Exception as e:
             print(f"An error occurred: {e}")
 
@@ -50,6 +59,8 @@ class PDTOPSIS_Sort:
             for label, content in self.decision_matrix.items():
                 self.domain['ideal'].append(max(content))
                 self.domain['anti_ideal'].append(min(content))
+            
+            return self.domain
 
         except Exception as e:
             print(f"An error occurred: {e}")
