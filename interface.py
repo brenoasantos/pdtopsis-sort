@@ -7,13 +7,6 @@ import time
 
 import main
 
-# create the 'app_input' folder if it doesn't exist
-input_folder_path = 'app_input'
-
-if not os.path.exists(input_folder_path):
-    os.makedirs(input_folder_path)
-    st.info(f'Created folder: {input_folder_path}')
-
 st.set_page_config(
     page_title='PDTOPSIS-Sort',
     page_icon='⚙️',
@@ -24,6 +17,13 @@ st.set_page_config(
         'About': "https://github.com/brenoasantos/pdtopsis-sort.git"
     }
 )
+
+# create the 'app_input' folder if it doesn't exist
+input_folder_path = 'app_input'
+
+if not os.path.exists(input_folder_path):
+    os.makedirs(input_folder_path)
+    st.info(f'Created folder: {input_folder_path}')
 
 st.title('PDTOPSIS-Sort')
 
@@ -49,20 +49,20 @@ if uploaded_files or os.listdir(input_folder_path):  # show button if files are 
         try:
             pdtopsis_sort = main.main()
 
-            #first step
+            # first step
             st.write('Construindo a matriz de decisão...')
             time.sleep(1)
 
             st.table(pdtopsis_sort.load_data())
 
-            #second step
+            # second step
             st.write('Criando tabela de referências...')
             time.sleep(1)
 
             ref_df = pd.DataFrame(pdtopsis_sort.create_ref_set(), columns=['Alternativa', 'Classe'])
             st.table(ref_df)
 
-            #third step
+            # third step
             st.write('Determinando os domínios...')
             time.sleep(1)
 
@@ -70,13 +70,13 @@ if uploaded_files or os.listdir(input_folder_path):  # show button if files are 
             print(pdtopsis_sort.determine_domain())
             st.table(domain_df)
 
-            #fourth step
+            # fourth step
             st.write('Inferindo pesos e perfis de limite...')
             time.sleep(1)
 
             pdtopsis_sort.infer_parameters()
 
-            #sixth step
+            # sixth step
             st.write('Classificando as alternativas...')
             time.sleep(1)
 
