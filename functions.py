@@ -25,7 +25,6 @@ class PDTOPSIS_Sort:
             columns = []
             columns.append(value for value in self.inputs.crit_code.tolist() if value != ' ')
             
-            print(columns)
             self.decision_matrix = pd.read_csv(self.matrix_values_csv, delimiter=';', header=None)
             # self.decision_matrix = pd.DataFrame(self.decision_matrix, columns=columns)
 
@@ -66,25 +65,34 @@ class PDTOPSIS_Sort:
             print(f"An error occurred: {e}")
 
     def infer_parameters(self):
-
         try:
             n_criteria = self.decision_matrix.shape[1]  # número de critérios
             n_alternatives = self.decision_matrix.shape[0]  # número de alternativas
             n_reference = len(self.reference_set)  # número de alternativas de referência
 
+            print(f'numero de criterios: {n_criteria}\nnumero de alternativas: {n_alternatives}\nnumero alt ref: {n_reference}\n')
+            
             # variáveis de decisão
             weights = cp.Variable(n_criteria, nonneg=True)
             boundary_profiles = cp.Variable((n_reference, n_criteria))
+
+            print(f'pesos: {weights}\nperfis de limite: {boundary_profiles}\n')
 
             # variáveis de erro para cada alternativa de referência
             sigma_plus = cp.Variable(n_reference, nonneg=True)
             sigma_minus = cp.Variable(n_reference, nonneg=True)
 
+            print(f'sigma plus: {sigma_plus}\nsigma minus: {sigma_minus}\n')
+
             # obter os valores de classificação das alternativas de referência
             ref_classes = np.array([ref[1] for ref in self.reference_set])
 
+            print(f'classes de referencia: {ref_classes}\n')
+
             # função objetivo: Minimizar a soma das variáveis de erro
             objective = cp.Minimize(cp.sum(sigma_plus) + cp.sum(sigma_minus))
+
+            print(f'funcao objetivo: {objective}\n')
 
             # restrições
             constraints = []
@@ -92,8 +100,10 @@ class PDTOPSIS_Sort:
             # restrições de pesos
             constraints.append(cp.sum(weights) == 1)
 
+            print(f'constraints: {constraints}\n')
+
             # as alternativas de referência devem ser classificadas corretamente
-            # assumindo que a classe 'C1' é a melhor e 'Cn' é a pior
+            # assumindo que a classe 'C1' é a melhor e 'C3' é a pior
             for i, ref in enumerate(self.reference_set):
                 ref_value = self.decision_matrix.iloc[i, :]
                 class_index = np.where(ref_classes == ref[1])[0][0]
@@ -101,9 +111,11 @@ class PDTOPSIS_Sort:
                 # restrição para a classe superior (benefício)
                 if ref[1] == 'C1':
                     constraints.append(cp.multiply(boundary_profiles[class_index, :], weights) - ref_value <= sigma_plus[i])
+
                 # restrição para a classe inferior (custo)
-                elif ref[1] == 'Cn':
+                elif ref[1] == 'C3':
                     constraints.append(ref_value - cp.multiply(boundary_profiles[class_index, :], weights) <= sigma_minus[i])
+
                 # restrições para as classes intermediárias
                 else:
                     constraints.append(cp.multiply(boundary_profiles[class_index, :], weights) - ref_value <= sigma_plus[i])
@@ -128,8 +140,11 @@ class PDTOPSIS_Sort:
             # criando DataFrame para os perfis de limite
             profiles_df = pd.DataFrame(self.profiles, columns=[f'Profile {i+1}' for i in range(self.profiles.shape[1])])
 
+            print(self.weights)
+            print(self.profiles)
+
             # retornar os DataFrames
-            return weights_df, profiles_df
+            return self.weights, self.profiles
 
         except Exception as e:
             print(f"An error occurred: {e}")
@@ -154,7 +169,7 @@ class PDTOPSIS_Sort:
             '''
             self.normalized_decision_matrix = self.complete_decision_matrix / self.complete_decision_matrix.max(axis=0)
             
-            return self.normalize_decision_matrix
+            return self.normalized_decision_matrix
         
         except Exception as e:
             print(f"An error occurred: {e}")
@@ -171,7 +186,7 @@ class PDTOPSIS_Sort:
         except Exception as e:
             print(f"An error occurred: {e}")
 
-    def determine_ideal_and_anti_ideal_solutions(self, beneficial_criteria, cost_criteria):
+    def determine_ideal_and_anti_ideal_solutions(self, beneficial_criteria):
         try:
             '''
             Step 6.4: Determine the ideal and anti-ideal solutions.
@@ -179,7 +194,7 @@ class PDTOPSIS_Sort:
             self.v_star = np.max(self.weighted_normalized_decision_matrix[:, beneficial_criteria], axis=0)
             self.v_minus = np.min(self.weighted_normalized_decision_matrix[:, beneficial_criteria], axis=0)
             
-            return self.v_star, self.v_minus
+            return [self.v_star, self.v_minus]
         
         except Exception as e:
             print(f"An error occurred: {e}")
@@ -240,7 +255,7 @@ class PDTOPSIS_Sort:
         except Exception as e:
             print(f"An error occurred: {e}")
 
-    def classify_alternatives(self, profiles_closeness_coefficients):
+    def classify_alternatives(self):
         try:
             '''
             Step 6.7: Classify the alternatives by making comparisons between their closeness coefficients.
