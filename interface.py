@@ -131,8 +131,8 @@ if uploaded_files or os.listdir(input_folder_path):  # show button if files are 
         except Exception as e:
             st.error(f'An error occurred: {e}')
 
-for file in os.listdir(input_folder_path):
-    path = input_folder_path+file
-    os.remove(path)
+# for file in os.listdir(input_folder_path):
+#     path = input_folder_path+file
+#     os.remove(path)
 
-os.rmdir(input_folder_path)
+# os.rmdir(input_folder_path)

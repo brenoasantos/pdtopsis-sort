@@ -105,13 +105,21 @@ class PDTOPSIS_Sort:
             # as alternativas de referência devem ser classificadas corretamente
             # assumindo que a classe 'C1' é a melhor e 'C3' é a pior
             for i, ref in enumerate(self.reference_set):
+                print(f'{i} {ref}\n')
+
                 ref_value = self.decision_matrix.iloc[i, :]
                 class_index = np.where(ref_classes == ref[1])[0][0]
+
+                print(f'valor de referencia: {ref_value}\n')
+                print(f'index da classe: {class_index}\n')
 
                 # restrição para a classe superior (benefício)
                 if ref[1] == 'C1':
                     constraints.append(cp.multiply(boundary_profiles[class_index, :], weights) - ref_value <= sigma_plus[i])
 
+                # elif ref[1] == 'C2':
+                #     constraints.append(cp.multiply(boundary_profiles[class_index, :], weights) - ref_value <= sigma_plus[i])
+                
                 # restrição para a classe inferior (custo)
                 elif ref[1] == 'C3':
                     constraints.append(ref_value - cp.multiply(boundary_profiles[class_index, :], weights) <= sigma_minus[i])
@@ -119,7 +127,9 @@ class PDTOPSIS_Sort:
                 # restrições para as classes intermediárias
                 else:
                     constraints.append(cp.multiply(boundary_profiles[class_index, :], weights) - ref_value <= sigma_plus[i])
-                    constraints.append(ref_value - cp.multiply(boundary_profiles[class_index - 1, :], weights) <= sigma_minus[i])
+                    # constraints.append(ref_value - cp.multiply(boundary_profiles[class_index - 1, :], weights) <= sigma_minus[i])
+            
+            print(f'novas constraints: {constraints}\n')
 
             # monotonicidade dos perfis de limite entre classes
             for j in range(n_criteria):
