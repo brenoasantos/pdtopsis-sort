@@ -66,17 +66,20 @@ class PDTOPSIS_Sort:
 
     def infer_parameters(self):
         try:
-            n_criteria = self.decision_matrix.shape[1]  # número de critérios
-            n_reference = len(self.reference_set)  # número de alternativas de referência
+            # Define o número de critérios e alternativas de referência
+            n_criteria = self.decision_matrix.shape[1]
+            n_reference = len(self.reference_set)
+            
+            # Cria um dicionário com o tamanho das classes para ponderar a função objetivo
             class_sizes = {class_: sum(ref[1] == class_ for ref in self.reference_set) for class_ in set(ref[1] for ref in self.reference_set)}
     
-            # variáveis de decisão
+            # Inicializa as variáveis de decisão: pesos e perfis de limite
             weights = cp.Variable(n_criteria, nonneg=True)
             boundary_profiles = cp.Variable((n_reference, n_criteria))
             sigma_plus = cp.Variable(n_reference, nonneg=True)
             sigma_minus = cp.Variable(n_reference, nonneg=True)
     
-            # função objetivo com pesos de acordo com o tamanho das classes de referência
+            # Define a função objetivo
             objective_terms = []
             for i, ref in enumerate(self.reference_set):
                 class_size = class_sizes[ref[1]]
@@ -84,51 +87,57 @@ class PDTOPSIS_Sort:
                 objective_terms.append(sigma_minus[i] / class_size)
             objective = cp.Minimize(cp.sum(objective_terms))
     
-            # restrições
+            # Define as restrições
             constraints = [cp.sum(weights) == 1]
+            
+            # Agora definimos ref_classes
+            ref_classes = np.array([ref[1] for ref in self.reference_set])
     
-            # Restrições para classificação correta das alternativas de referência
+            # Adiciona restrições de classificação para as alternativas de referência
             for i, ref in enumerate(self.reference_set):
                 ref_value = self.decision_matrix.iloc[i].values
                 class_index = np.where(ref_classes == ref[1])[0][0]
                 if ref[1] == 'C1':
                     constraints.append(
-                        cp.matmul(weights, ref_value) - boundary_profiles[class_index, :] <= sigma_plus[i]
+                        weights @ ref_value - boundary_profiles[class_index, :] <= sigma_plus[i]
                     )
                 elif ref[1] == 'C3':
                     constraints.append(
-                        boundary_profiles[class_index, :] - cp.matmul(weights, ref_value) <= sigma_minus[i]
+                        boundary_profiles[class_index, :] - weights @ ref_value <= sigma_minus[i]
                     )
                 else:
+                    # Para classes intermediárias C2, ..., Cq-1
                     constraints.append(
-                        cp.matmul(weights, ref_value) - boundary_profiles[class_index, :] <= sigma_plus[i]
+                        weights @ ref_value - boundary_profiles[class_index, :] <= sigma_plus[i]
                     )
                     constraints.append(
-                        boundary_profiles[class_index - 1, :] - cp.matmul(weights, ref_value) <= sigma_minus[i]
+                        boundary_profiles[class_index - 1, :] - weights @ ref_value <= sigma_minus[i]
                     )
     
-            # restrições de monotonicidade dos perfis de limite
+            # Adiciona restrições de monotonicidade para os perfis de limite
             for j in range(n_criteria):
                 for i in range(n_reference - 1):
                     constraints.append(
                         boundary_profiles[i, j] >= boundary_profiles[i + 1, j]
                     )
     
-            # resolver o problema
+            # Resolve o problema de otimização
             problem = cp.Problem(objective, constraints)
-            problem.solve(solver=cp.SCS)
+            problem.solve()
     
-            # armazenar e retornar os resultados
+            # Armazena e retorna os pesos e perfis de limite inferidos
             self.weights = weights.value
             self.profiles = boundary_profiles.value
-    
-            # gerar e retornar tabelas de resultados para pesos e perfis de limite
+            
+            # Gera DataFrames para os resultados
             weights_df = pd.DataFrame(self.weights, columns=['Peso'])
             profiles_df = pd.DataFrame(self.profiles, columns=[f'Perfil {i+1}' for i in range(n_criteria)])
+            
             return weights_df, profiles_df
-    
+        
         except Exception as e:
             print(f"An error occurred: {e}")
+
 
     def calculate_complete_decision_matrix(self, decision_matrix, boundary_profiles, domain):
         try:
