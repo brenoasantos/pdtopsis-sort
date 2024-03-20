@@ -66,95 +66,63 @@ class PDTOPSIS_Sort:
 
     def infer_parameters(self):
         try:
-            n_criteria = self.decision_matrix.shape[1]  # número de critérios
-            n_alternatives = self.decision_matrix.shape[0]  # número de alternativas
-            n_reference = len(self.reference_set)  # número de alternativas de referência
+            # número de critérios e alternativas de referência
+            n_criteria = self.decision_matrix.shape[1]
+            n_reference = len(self.reference_set)
+            class_sizes = {class_: sum(ref[1] == class_ for ref in self.reference_set) for class_ in set(ref[1] for ref in self.reference_set)}
 
-            print(f'numero de criterios: {n_criteria}\nnumero de alternativas: {n_alternatives}\nnumero alt ref: {n_reference}\n')
-            
             # variáveis de decisão
             weights = cp.Variable(n_criteria, nonneg=True)
-            boundary_profiles = cp.Variable((n_reference, n_criteria))
-
-            print(f'pesos: {weights}\nperfis de limite: {boundary_profiles}\n')
-
-            # variáveis de erro para cada alternativa de referência
+            boundary_profiles = cp.Variable((n_reference - 1, n_criteria))
             sigma_plus = cp.Variable(n_reference, nonneg=True)
             sigma_minus = cp.Variable(n_reference, nonneg=True)
 
-            print(f'sigma plus: {sigma_plus}\nsigma minus: {sigma_minus}\n')
-
-            # obter os valores de classificação das alternativas de referência
-            ref_classes = np.array([ref[1] for ref in self.reference_set])
-
-            print(f'classes de referencia: {ref_classes}\n')
-
-            # função objetivo: Minimizar a soma das variáveis de erro
-            objective = cp.Minimize(cp.sum(sigma_plus) + cp.sum(sigma_minus))
-
-            print(f'funcao objetivo: {objective}\n')
+            # função objetivo 
+            objective = cp.Minimize(
+                sum(sigma_plus[i] / class_sizes[self.reference_set[i][1]] for i in range(n_reference)) +
+                sum(sigma_minus[i] / class_sizes[self.reference_set[i][1]] for i in range(n_reference))
+            )
 
             # restrições
-            constraints = []
-
-            # restrições de pesos
-            constraints.append(cp.sum(weights) == 1)
-
-            print(f'constraints: {constraints}\n')
-
-            # as alternativas de referência devem ser classificadas corretamente
-            # assumindo que a classe 'C1' é a melhor e 'C3' é a pior
-            for i, ref in enumerate(self.reference_set):
-                print(f'{i} {ref}\n')
-
-                ref_value = self.decision_matrix.iloc[i, :]
-                class_index = np.where(ref_classes == ref[1])[0][0]
-
-                print(f'valor de referencia: {ref_value}\n')
-                print(f'index da classe: {class_index}\n')
-
-                # restrição para a classe superior (benefício)
-                if ref[1] == 'C1':
-                    constraints.append(cp.multiply(boundary_profiles[class_index, :], weights) - ref_value <= sigma_plus[i])
-
-                # elif ref[1] == 'C2':
-                #     constraints.append(cp.multiply(boundary_profiles[class_index, :], weights) - ref_value <= sigma_plus[i])
-                
-                # restrição para a classe inferior (custo)
-                elif ref[1] == 'C3':
-                    constraints.append(ref_value - cp.multiply(boundary_profiles[class_index, :], weights) <= sigma_minus[i])
-
-                # restrições para as classes intermediárias
-                else:
-                    constraints.append(cp.multiply(boundary_profiles[class_index, :], weights) - ref_value <= sigma_plus[i])
-                    # constraints.append(ref_value - cp.multiply(boundary_profiles[class_index - 1, :], weights) <= sigma_minus[i])
+            constraints = [cp.sum(weights) == 1]
             
-            print(f'novas constraints: {constraints}\n')
-
-            # monotonicidade dos perfis de limite entre classes
+            # obtendo valores de referência e suas classes
+            ref_values = np.array([self.decision_matrix.iloc[i].values for i, _ in enumerate(self.reference_set)])
+            ref_classes = np.array([ref[1] for ref in self.reference_set])
+            
+            # adicionando restrições de classificação
+            for i, ref_class in enumerate(ref_classes):
+                class_index = list(class_sizes.keys()).index(ref_class)
+                constraints += [
+                    cp.matmul(ref_values[i], weights) - cp.matmul(boundary_profiles[class_index, :], weights) >= -sigma_plus[i],
+                    cp.matmul(boundary_profiles[class_index, :], weights) - cp.matmul(ref_values[i], weights) >= -sigma_minus[i]
+                ]
+            
+            # monotonicidade dos perfis de limite
             for j in range(n_criteria):
-                for k in range(n_reference - 1):
-                    constraints.append(boundary_profiles[k, j] >= boundary_profiles[k + 1, j])
+                constraints += [
+                    boundary_profiles[i, j] >= boundary_profiles[i + 1, j]
+                    for i in range(n_reference - 2)
+                ]
 
             # resolver o problema
             problem = cp.Problem(objective, constraints)
-            problem.solve()
+            result = problem.solve()
+
+            # verificar se a solução é ótima
+            if problem.status not in [cp.OPTIMAL, cp.OPTIMAL_INACCURATE]:
+                raise ValueError('A solução não é ótima.')
 
             # armazenar os resultados
             self.weights = weights.value
             self.profiles = boundary_profiles.value
             
-            # criando DataFrame para os pesos
+            # criar tabelas para pesos e perfis de limite
             weights_df = pd.DataFrame(self.weights, columns=['Weights'])
-
-            # criando DataFrame para os perfis de limite
-            profiles_df = pd.DataFrame(self.profiles, columns=[f'Profile {i+1}' for i in range(self.profiles.shape[1])])
-
-            print(self.weights)
-            print(self.profiles)
-
-            # retornar os DataFrames
-            return self.weights, self.profiles
+            profiles_df = pd.DataFrame(self.profiles, columns=[f'Profile {i+1}' for i in range(n_criteria)])
+            
+            # retornar tabelas
+            return weights_df, profiles_df
 
         except Exception as e:
             print(f"An error occurred: {e}")
@@ -196,13 +164,13 @@ class PDTOPSIS_Sort:
         except Exception as e:
             print(f"An error occurred: {e}")
 
-    def determine_ideal_and_anti_ideal_solutions(self, beneficial_criteria):
+    def determine_ideal_and_anti_ideal_solutions(self):
         try:
             '''
             Step 6.4: Determine the ideal and anti-ideal solutions.
             '''
-            self.v_star = np.max(self.weighted_normalized_decision_matrix[:, beneficial_criteria], axis=0)
-            self.v_minus = np.min(self.weighted_normalized_decision_matrix[:, beneficial_criteria], axis=0)
+            self.v_star = np.max(self.weighted_normalized_decision_matrix, axis=0)
+            self.v_minus = np.min(self.weighted_normalized_decision_matrix, axis=0)
             
             return [self.v_star, self.v_minus]
         
