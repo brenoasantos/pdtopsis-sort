@@ -244,8 +244,19 @@ class PDTOPSIS_Sort:
             '''
             self.v_star = np.max(self.weighted_normalized_matrix, axis=0)
             self.v_minus = np.min(self.weighted_normalized_matrix, axis=0)
-            
-            return self.v_star, self.v_minus
+
+            # Transformando a matriz em uma linha com uma única coluna
+            v_star_reshaped = self.v_star.reshape(-1, 1)
+            v_minus_reshaped = self.v_minus.reshape(-1, 1)
+
+            # Transpondo a matriz para obter uma linha com múltiplas colunas
+            self.v_star = v_star_reshaped.T
+            self.v_minus = v_minus_reshaped.T
+
+            self.combined_matrix = np.concatenate((self.v_star, self.v_minus), axis=0)
+            self.combined_df = pd.DataFrame(self.combined_matrix)
+            self.combined_df.reset_index(drop=True, inplace=True)
+            return self.combined_df
         
         except Exception as e:
             self.errors = self.errors+1

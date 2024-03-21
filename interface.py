@@ -99,8 +99,7 @@ if uploaded_files or os.listdir(input_folder_path):  # show button if files are 
 
             st.info('Determinando as soluções ideal e anti-ideal')
 
-            st.write(pdtopsis_sort.determine_ideal_and_anti_ideal_solutions()[0])
-            st.write(pdtopsis_sort.determine_ideal_and_anti_ideal_solutions()[1])
+            st.write(pdtopsis_sort.determine_ideal_and_anti_ideal_solutions())
 
             # calcular as distâncias Euclidianas para cada alternativa e perfil
             pdtopsis_sort.calculate_distances()
