@@ -51,29 +51,25 @@ if uploaded_files or os.listdir(input_folder_path):  # show button if files are 
 
             # first step
             st.info('Construindo a matriz de decisão...')
-            time.sleep(1)
 
             st.table(pdtopsis_sort.load_data())
 
             # second step
             st.info('Criando tabela de referências...')
-            time.sleep(1)
 
             ref_df = pd.DataFrame(pdtopsis_sort.create_ref_set(), columns=['Alternativa', 'Classe'])
             st.table(ref_df)
 
             # third step
             st.info('Determinando os domínios...')
-            time.sleep(1)
 
             domain_df = pd.DataFrame(pdtopsis_sort.determine_domain())
             st.table(domain_df)
 
             # fourth step
             st.info('Inferindo pesos e perfis de limite...')
-            time.sleep(1)
 
-            pdtopsis_sort.infer_parameters()
+            # pdtopsis_sort.infer_parameters()
             # weights_df = pdtopsis_sort.infer_parameters()[0]
             # profiles_df = pdtopsis_sort.infer_parameters()[1]
 
@@ -82,51 +78,49 @@ if uploaded_files or os.listdir(input_folder_path):  # show button if files are 
             
             # sixth step
             st.info('Matriz de decisão completa...')
-            time.sleep(1)
 
             # criar a matriz de decisão completa concatenando X, P e D
-            cdm_df = pd.DataFrame(pdtopsis_sort.calculate_complete_decision_matrix(pdtopsis_sort.decision_matrix.values,
-                                            pdtopsis_sort.profiles,
-                                            np.array(pdtopsis_sort.domain['ideal'], pdtopsis_sort.domain['anti_ideal'])))
+            cdm_df = pd.DataFrame(pdtopsis_sort.calculate_complete_decision_matrix())
 
             st.table(cdm_df)
 
             # normalizar a matriz de decisão completa
             st.info('Normalizando a matriz de decisão...')
-            time.sleep(1)
 
             normalized_dm_df = pd.DataFrame(pdtopsis_sort.normalize_decision_matrix())
 
             st.table(normalized_dm_df)
 
             # calcular a matriz de decisão ponderada e normalizada
-            pdtopsis_sort.calculate_weighted_normalized_decision_matrix(pdtopsis_sort.weights)
+            pdtopsis_sort.calculate_weighted_normalized_decision_matrix()
 
             # definir os critérios de benefício
             beneficial_criteria = [i for i in range(pdtopsis_sort.decision_matrix.shape[1])]
 
             st.info('Determinando as soluções ideal e anti-ideal')
-            time.sleep(1)
 
-            st.write(pdtopsis_sort.determine_ideal_and_anti_ideal_solutions(beneficial_criteria)[0])
-            st.write(pdtopsis_sort.determine_ideal_and_anti_ideal_solutions(beneficial_criteria)[1])
+            st.write(pdtopsis_sort.determine_ideal_and_anti_ideal_solutions()[0])
+            st.write(pdtopsis_sort.determine_ideal_and_anti_ideal_solutions()[1])
 
             # calcular as distâncias Euclidianas para cada alternativa e perfil
-            pdtopsis_sort.calculate_distances()
+            # pdtopsis_sort.calculate_distances()
 
             # calcular os coeficientes de proximidade para cada alternativa e perfil
-            pdtopsis_sort.calculate_closeness_coefficients()
+            # pdtopsis_sort.calculate_closeness_coefficients()
 
             st.info('Classificando as alternativas...')
-            time.sleep(1)
 
-            st.write(pdtopsis_sort.classify_alternatives())
+            # st.write(pdtopsis_sort.classify_alternatives())
 
             # # apresentar os resultados finais
             # for i, classification in enumerate(classifications):
             #     print(f'Alternativa {i + 1}: Classe {classification}')
 
-            st.success('PDTOPSIS-Sort executed successfully!')
+            if pdtopsis_sort.errors == 0:
+                st.success('PDTOPSIS-Sort executed successfully!')
+
+            else:
+                st.error('PDTOPSIS-Sort could not be executed properly.')
 
         except Exception as e:
             st.error(f'An error occurred: {e}')
