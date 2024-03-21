@@ -231,6 +231,9 @@ class PDTOPSIS_Sort:
                 # Adicione a linha ponderada à nova lista de resultados
                 self.weighted_normalized_matrix.append(weighted_row)
 
+            self.row_size = len(self.weighted_normalized_matrix)
+            self.column_size = len(self.weighted_normalized_matrix[0])
+
             return self.weighted_normalized_matrix
         
         except Exception as e:
@@ -253,10 +256,8 @@ class PDTOPSIS_Sort:
             self.v_star = v_star_reshaped.T
             self.v_minus = v_minus_reshaped.T
 
-            self.combined_matrix = np.concatenate((self.v_star, self.v_minus), axis=0)
-            self.combined_df = pd.DataFrame(self.combined_matrix)
-            self.combined_df.reset_index(drop=True, inplace=True)
-            return self.combined_df
+            # self.combined_df.reset_index(drop=True, inplace=True)
+            return self.v_star, self.v_minus
         
         except Exception as e:
             self.errors = self.errors+1
@@ -268,27 +269,34 @@ class PDTOPSIS_Sort:
             '''
             Step 6.5: Calculate the Euclidean distances from each alternative and profile to the ideal and anti-ideal solutions.
             '''
-            # Inicializando matrizes para armazenar as distâncias      
-            distances_to_ideal = np.zeros(len(self.weighted_normalized_matrix))
-            distances_to_anti_ideal = np.zeros(len(self.weighted_normalized_matrix))
+            # Ensure all variables are initialized and not None
+            if self.weighted_normalized_matrix is None or self.v_star is None or self.v_minus is None:
+                raise ValueError("Variables not initialized")
+            
+            # Convert lists to NumPy arrays if they are not already
+            if not isinstance(self.weighted_normalized_matrix, np.ndarray):
+                self.weighted_normalized_matrix = np.array(self.weighted_normalized_matrix)
+            if not isinstance(self.v_star, np.ndarray):
+                self.v_star = np.array(self.v_star)
+            if not isinstance(self.v_minus, np.ndarray):
+                self.v_minus = np.array(self.v_minus)
+            
+            # Initialize matrices for storing distances
+            self.distances_to_ideal = np.zeros(self.row_size - 2)
+            self.distances_to_anti_ideal = np.zeros(self.row_size - 2)
 
-            # Iterando sobre as linhas e colunas da matriz
-            for i in range(len(self.weighted_normalized_matrix)):    
-                ideal_distance = 0
-                anti_ideal_distance = 0
-                for j in range(len(self.weighted_normalized_matrix[0])):
-                    ideal_distance += (self.weighted_normalized_matrix[i,j] - self.v_star[j])**2
-                    anti_ideal_distance += (self.weighted_normalized_matrix[i,j] - self.v_minus[j])**2
-                distances_to_ideal[i] = np.sqrt(ideal_distance)
-                distances_to_anti_ideal[i] = np.sqrt(anti_ideal_distance)
+            # Use NumPy operations for subtraction and squaring
+            self.distances_to_ideal_mat = np.square(self.weighted_normalized_matrix - self.v_star)
+            self.distances_to_anti_ideal_mat = np.square(self.weighted_normalized_matrix - self.v_minus)
 
-            print(distances_to_ideal)
-            print(distances_to_anti_ideal)
+            # Calculate Euclidean distances
+            self.distances_to_ideal = np.sqrt(np.sum(self.distances_to_ideal_mat, axis=1))
+            self.distances_to_anti_ideal = np.sqrt(np.sum(self.distances_to_anti_ideal_mat, axis=1))
 
-            return list(distances_to_ideal), list(distances_to_anti_ideal)
-
+            return self.distances_to_ideal_mat, self.distances_to_anti_ideal_mat
+                    
         except Exception as e:
-            self.errors = self.errors+1
+            self.errors += 1
             print(f"An error occurred: {e}")
 
     def calculate_closeness_coefficients(self):

@@ -99,10 +99,15 @@ if uploaded_files or os.listdir(input_folder_path):  # show button if files are 
 
             st.info('Determinando as soluções ideal e anti-ideal')
 
-            st.write(pdtopsis_sort.determine_ideal_and_anti_ideal_solutions())
+            st.table(pdtopsis_sort.determine_ideal_and_anti_ideal_solutions()[0])
+            st.table(pdtopsis_sort.determine_ideal_and_anti_ideal_solutions()[1])
+
 
             # calcular as distâncias Euclidianas para cada alternativa e perfil
             pdtopsis_sort.calculate_distances()
+            st.table(pdtopsis_sort.calculate_distances()[0])
+            st.table(pdtopsis_sort.calculate_distances()[1])
+
 
             # calcular os coeficientes de proximidade para cada alternativa e perfil
             # pdtopsis_sort.calculate_closeness_coefficients()
