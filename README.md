@@ -3,7 +3,6 @@ Preference Disaggregation Technique for Order Preferences by  Similarity to Idea
 
 ## Team
 - baas@cin.ufpe.br
-- dco3@cin.ufpe.br
 - grcc@cin.ufpe.br
 - mmmj@cin.ufpe.br
 - mldm@cin.ufpe.br
