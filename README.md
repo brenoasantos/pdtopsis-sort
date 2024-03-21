@@ -16,6 +16,10 @@ After that, you need to create a virtual environment:
 
 `python3 -m venv streamlit_env`
 
+Install CVXPY library:
+
+`pip install cvxpy`
+
 Now you can run the interface:
 
 `streamlit run interface.py`
