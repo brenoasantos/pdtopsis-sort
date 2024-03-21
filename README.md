@@ -16,9 +16,9 @@ After that, you need to create a virtual environment:
 
 `python3 -m venv streamlit_env`
 
-Install CVXPY library:
+Install required libraries:
 
-`pip install cvxpy`
+`pip3 install -r requiments.txt`
 
 Now you can run the interface:
 
