@@ -8,4 +8,18 @@ Preference Disaggregation Technique for Order Preferences by  Similarity to Idea
 - mldm@cin.ufpe.br
 
 ## Run application
+To run the application localy, you must install streamlit:
+
+`pip install streamlit`
+
+After that, you need to create a virtual environment:
+
+`python3 -m venv streamlit_env`
+
+Install required libraries:
+
+`pip3 install -r requiments.txt`
+
+Now you can run the interface:
+
 `streamlit run interface.py`
