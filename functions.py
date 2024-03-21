@@ -99,19 +99,19 @@ class PDTOPSIS_Sort:
                 class_index = np.where(ref_classes == ref[1])[0][0]
                 if ref[1] == 'C1':
                     constraints.append(
-                        weights @ ref_value - boundary_profiles[class_index, :] <= sigma_plus[i]
+                        cp.matmul(weights, ref_value) - boundary_profiles[class_index, :] <= sigma_plus[i]
                     )
                 elif ref[1] == 'C3':
                     constraints.append(
-                        boundary_profiles[class_index, :] - weights @ ref_value <= sigma_minus[i]
+                        boundary_profiles[class_index, :] - cp.matmul(weights, ref_value) <= sigma_minus[i]
                     )
                 else:
                     # Para classes intermediárias C2, ..., Cq-1
                     constraints.append(
-                        weights @ ref_value - boundary_profiles[class_index, :] <= sigma_plus[i]
+                        cp.matmul(weights, ref_value) - boundary_profiles[class_index, :] <= sigma_plus[i]
                     )
                     constraints.append(
-                        boundary_profiles[class_index - 1, :] - weights @ ref_value <= sigma_minus[i]
+                        boundary_profiles[class_index - 1, :] - cp.matmul(weights, ref_value) <= sigma_minus[i]
                     )
     
             # Adiciona restrições de monotonicidade para os perfis de limite
@@ -137,6 +137,7 @@ class PDTOPSIS_Sort:
         
         except Exception as e:
             print(f"An error occurred: {e}")
+
 
 
     def calculate_complete_decision_matrix(self, decision_matrix, boundary_profiles, domain):
