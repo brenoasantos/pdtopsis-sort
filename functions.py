@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-import cvxpy as cp
+# import cvxpy as cp
 import math
 
 class PDTOPSIS_Sort:
@@ -204,7 +204,7 @@ class PDTOPSIS_Sort:
             Step 6.2: Normalize the Complete Decision Matrix.
             '''
             np_matrix = np.array(self.complete_decision_matrix)
-            max_values = np.amax(np_matrix)
+            max_values = np.max(np_matrix, axis=0)
 
             self.normalized_matrix = np_matrix/max_values
 
