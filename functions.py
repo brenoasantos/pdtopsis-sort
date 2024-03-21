@@ -172,7 +172,7 @@ class PDTOPSIS_Sort:
     def calculate_complete_decision_matrix(self):
         self.complete_decision_matrix = self.list_decision_matrix
 
-        profiles = [[0.0816, 0.0616], [0.1174, 0.0675], [0.2089, -0.00047], [0.3669, 0.2458], [1.4659, 0.9165], [0.7805, 0.4404], [0.6375, 0.1256], [1.0971, 0.9865], [2.0729, 2.5155], [2.4333, -0.2015]]
+        profiles = [[0.0816, 0.0616], [0.1174, 0.0675], [0.2089, -0.0047], [0.3669, 0.2458], [1.4659, 0.9165], [0.7805, 0.4404], [0.6375, 0.1256], [1.0971, 0.9865], [2.0729, 2.5155], [2.4333, -0.2015]]
         domain = [[i for i in self.domain['ideal']], [i for i in self.domain['anti_ideal']]]
         
         try:
@@ -203,12 +203,13 @@ class PDTOPSIS_Sort:
             '''
             Step 6.2: Normalize the Complete Decision Matrix.
             '''
-            df_matrix = pd.DataFrame(self.complete_decision_matrix)
+            np_matrix = np.array(self.complete_decision_matrix)
+            max_values = np.amax(np_matrix)
 
-            self.normalized_decision_matrix = (df_matrix-df_matrix.min().min())/(df_matrix.max().max()-df_matrix.min().min())
+            self.normalized_matrix = np_matrix/max_values
 
-            return self.normalized_decision_matrix
-        
+            return self.normalized_matrix
+            
         except Exception as e:
             self.errors = self.errors+1
             print(f"An error occurred: {e}")
@@ -220,17 +221,17 @@ class PDTOPSIS_Sort:
             '''
             Step 6.3: Calculate the weighted and normalized Decision Matrix.
             '''
-            self.weighted_normalized_decision_matrix = []
+            self.weighted_normalized_matrix = []
 
-            # Itere sobre cada linha da matriz
-            for index, row in self.normalized_decision_matrix.iterrows():
-                # Multiplique cada elemento (valor de critério) pelo peso correspondente
+            # Itere sobre cada linha da matriz normalizada
+            for row in self.normalized_matrix:
+            # Multiplique cada elemento (valor de critério) pelo peso correspondente
                 weighted_row = [value*weights[i] for i, value in enumerate(row)]
 
                 # Adicione a linha ponderada à nova lista de resultados
-                self.weighted_normalized_decision_matrix.append(weighted_row)
+                self.weighted_normalized_matrix.append(weighted_row)
 
-            return self.weighted_normalized_decision_matrix
+            return self.weighted_normalized_matrix
         
         except Exception as e:
             self.errors = self.errors+1
@@ -241,8 +242,8 @@ class PDTOPSIS_Sort:
             '''
             Step 6.4: Determine the ideal and anti-ideal solutions.
             '''
-            self.v_star = np.max(self.weighted_normalized_decision_matrix, axis=0)
-            self.v_minus = np.min(self.weighted_normalized_decision_matrix, axis=0)
+            self.v_star = np.max(self.weighted_normalized_matrix, axis=0)
+            self.v_minus = np.min(self.weighted_normalized_matrix, axis=0)
             
             return self.v_star, self.v_minus
         
@@ -252,6 +253,8 @@ class PDTOPSIS_Sort:
 
 
     def calculate_distances(self):
+        n_alternatives = self.decision_matrix.shape[0]
+
         try:
             '''
             Step 6.5: Calculate the Euclidean distances from each alternative and profile to the ideal and anti-ideal solutions.
@@ -263,17 +266,17 @@ class PDTOPSIS_Sort:
             self.distances_to_anti_ideal_profiles = []
 
             # Calcular as distâncias Euclidianas para cada alternativa (a_i)
-            for i in range(self.m):  # m é o número de alternativas
-                distance_to_ideal = np.sqrt(np.sum((self.weighted_normalized_decision_matrix[i, :] - self.v_star) ** 2))
-                distance_to_anti_ideal = np.sqrt(np.sum((self.weighted_normalized_decision_matrix[i, :] - self.v_minus) ** 2))
+            for i in range(n_alternatives):  # m é o número de alternativas
+                distance_to_ideal = np.sqrt(np.sum((self.weighted_normalized_matrix[i, :]-self.v_star)**2))
+                distance_to_anti_ideal = np.sqrt(np.sum((self.weighted_normalized_matrix[i, :]-self.v_minus)**2))
                 self.distances_to_ideal.append(distance_to_ideal)
                 self.distances_to_anti_ideal.append(distance_to_anti_ideal)
 
             # Calcular as distâncias Euclidianas para cada perfil (P_k)
             for k in range(self.q - 1):  # q é o número de perfis + 1
-                profile_index = k + self.m  # Perfis são indexados após as alternativas na matriz completa
-                distance_to_ideal_profile = np.sqrt(np.sum((self.weighted_normalized_decision_matrix[profile_index, :] - self.v_star) ** 2))
-                distance_to_anti_ideal_profile = np.sqrt(np.sum((self.weighted_normalized_decision_matrix[profile_index, :] - self.v_minus) ** 2))
+                profile_index = k + n_alternatives  # Perfis são indexados após as alternativas na matriz completa
+                distance_to_ideal_profile = np.sqrt(np.sum((self.weighted_normalized_matrix[profile_index, :] - self.v_star) ** 2))
+                distance_to_anti_ideal_profile = np.sqrt(np.sum((self.weighted_normalized_matrix[profile_index, :] - self.v_minus) ** 2))
                 self.distances_to_ideal_profiles.append(distance_to_ideal_profile)
                 self.distances_to_anti_ideal_profiles.append(distance_to_anti_ideal_profile)
 
@@ -293,7 +296,7 @@ class PDTOPSIS_Sort:
             self.profiles_closeness_coefficients = []
 
             # Calcular os coeficientes de proximidade para cada alternativa
-            for i in range(self.m):  # m é o número de alternativas
+            for i in range(n_alternatives):  # m é o número de alternativas
                 closeness_coefficient = self.distances_to_anti_ideal[i] / (self.distances_to_ideal[i] + self.distances_to_anti_ideal[i])
                 self.closeness_coefficients.append(closeness_coefficient)
 

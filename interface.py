@@ -103,7 +103,7 @@ if uploaded_files or os.listdir(input_folder_path):  # show button if files are 
             st.write(pdtopsis_sort.determine_ideal_and_anti_ideal_solutions()[1])
 
             # calcular as distâncias Euclidianas para cada alternativa e perfil
-            # pdtopsis_sort.calculate_distances()
+            pdtopsis_sort.calculate_distances()
 
             # calcular os coeficientes de proximidade para cada alternativa e perfil
             # pdtopsis_sort.calculate_closeness_coefficients()
