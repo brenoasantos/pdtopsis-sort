@@ -264,34 +264,28 @@ class PDTOPSIS_Sort:
 
 
     def calculate_distances(self):
-        n_alternatives = self.decision_matrix.shape[0]
-
         try:
             '''
             Step 6.5: Calculate the Euclidean distances from each alternative and profile to the ideal and anti-ideal solutions.
             '''
-            # Inicializar as listas para armazenar as distâncias
-            self.distances_to_ideal = []
-            self.distances_to_anti_ideal = []
-            self.distances_to_ideal_profiles = []
-            self.distances_to_anti_ideal_profiles = []
+            # Inicializando matrizes para armazenar as distâncias      
+            distances_to_ideal = np.zeros(len(self.weighted_normalized_matrix))
+            distances_to_anti_ideal = np.zeros(len(self.weighted_normalized_matrix))
 
-            # Calcular as distâncias Euclidianas para cada alternativa (a_i)
-            for i in range(n_alternatives):  # m é o número de alternativas
-                distance_to_ideal = np.sqrt(np.sum((self.weighted_normalized_matrix[i, :]-self.v_star)**2))
-                distance_to_anti_ideal = np.sqrt(np.sum((self.weighted_normalized_matrix[i, :]-self.v_minus)**2))
-                self.distances_to_ideal.append(distance_to_ideal)
-                self.distances_to_anti_ideal.append(distance_to_anti_ideal)
+            # Iterando sobre as linhas e colunas da matriz
+            for i in range(len(self.weighted_normalized_matrix)):    
+                ideal_distance = 0
+                anti_ideal_distance = 0
+                for j in range(len(self.weighted_normalized_matrix[0])):
+                    ideal_distance += (self.weighted_normalized_matrix[i,j] - self.v_star[j])**2
+                    anti_ideal_distance += (self.weighted_normalized_matrix[i,j] - self.v_minus[j])**2
+                distances_to_ideal[i] = np.sqrt(ideal_distance)
+                distances_to_anti_ideal[i] = np.sqrt(anti_ideal_distance)
 
-            # Calcular as distâncias Euclidianas para cada perfil (P_k)
-            for k in range(self.q - 1):  # q é o número de perfis + 1
-                profile_index = k + n_alternatives  # Perfis são indexados após as alternativas na matriz completa
-                distance_to_ideal_profile = np.sqrt(np.sum((self.weighted_normalized_matrix[profile_index, :] - self.v_star) ** 2))
-                distance_to_anti_ideal_profile = np.sqrt(np.sum((self.weighted_normalized_matrix[profile_index, :] - self.v_minus) ** 2))
-                self.distances_to_ideal_profiles.append(distance_to_ideal_profile)
-                self.distances_to_anti_ideal_profiles.append(distance_to_anti_ideal_profile)
+            print(distances_to_ideal)
+            print(distances_to_anti_ideal)
 
-            return self.distances_to_ideal, self.distances_to_anti_ideal, self.distances_to_ideal_profiles, self.distances_to_anti_ideal_profiles
+            return list(distances_to_ideal), list(distances_to_anti_ideal)
 
         except Exception as e:
             self.errors = self.errors+1
