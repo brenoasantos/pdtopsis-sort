@@ -103,20 +103,31 @@ if uploaded_files or os.listdir(input_folder_path):  # show button if files are 
             st.table(pdtopsis_sort.determine_ideal_and_anti_ideal_solutions()[1])
 
 
-            # Calcular as distâncias Euclidianas para cada alternativa e perfil
-            distances_to_ideal, distances_to_anti_ideal, distances_to_ideal_profiles, distances_to_anti_ideal_profiles = pdtopsis_sort.calculate_distances()
+            # função para calcular as distâncias
+            distances_results = pdtopsis_sort.calculate_distances()
+            distances_to_ideal = distances_results[0]
+            distances_to_anti_ideal = distances_results[1]
+            distances_to_ideal_profiles = distances_results[2]
+            distances_to_anti_ideal_profiles = distances_results[3]
 
-            # Converta as listas de distâncias em DataFrames do Pandas
+            # converter as listas de distâncias em DataFrames do Pandas
             df_distances_to_ideal = pd.DataFrame(distances_to_ideal, columns=['Distância à Solução Ideal'])
             df_distances_to_anti_ideal = pd.DataFrame(distances_to_anti_ideal, columns=['Distância à Solução Anti-Ideal'])
+            df_distances_to_ideal_profiles = pd.DataFrame(distances_to_ideal_profiles, columns=['Distância dos Perfis à Solução Ideal'])
+            df_distances_to_anti_ideal_profiles = pd.DataFrame(distances_to_anti_ideal_profiles, columns=['Distância dos Perfis à Solução Anti-Ideal'])
 
-            # Mostre os DataFrames como tabelas no Streamlit
+            # mostrar os DataFrames como tabelas no Streamlit
             st.info('Distâncias das alternativas para a solução ideal:')
             st.table(df_distances_to_ideal)
 
             st.info('Distâncias das alternativas para a solução anti-ideal:')
             st.table(df_distances_to_anti_ideal)
 
+            st.info('Distâncias dos perfis para a solução ideal:')
+            st.table(df_distances_to_ideal_profiles)
+
+            st.info('Distâncias dos perfis para a solução anti-ideal:')
+            st.table(df_distances_to_anti_ideal_profiles)
 
             # calcular os coeficientes de proximidade para cada alternativa e perfil
             # pdtopsis_sort.calculate_closeness_coefficients()
