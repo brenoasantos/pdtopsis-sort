@@ -326,27 +326,22 @@ class PDTOPSIS_Sort:
 
     def classify_alternatives(self):
         try:
-            # Certifique-se de que os coeficientes dos perfis estão em ordem decrescente
-            sorted_profiles = sorted(self.profiles_closeness_coefficients, reverse=True)
+            # A última classificação é 'C3', então qualquer coisa abaixo do perfil mais baixo é 'C3'
+            # A classificação mais alta é 'C1', então qualquer coisa acima do perfil mais alto é 'C1'
+            # Tudo o mais é 'C2'
 
-            self.classifications = []  # Esta lista armazenará a classificação de cada alternativa
+            self.classifications = ['C2'] * len(self.closeness_coefficients)  # Começamos assumindo que todas são 'C2'
 
-            # Classificar as alternativas
-            for i, closeness_coefficient in enumerate(self.closeness_coefficients):
-                # Verificar se a alternativa pertence à melhor classe 'C1'
-                if closeness_coefficient >= sorted_profiles[0]:
-                    class_assignment = 'C1'
-                # Verificar se a alternativa pertence à última classe 'C3'
-                elif closeness_coefficient < sorted_profiles[-1]:
-                    class_assignment = 'C3'
-                else:
-                    # Verificar as classes intermediárias
-                    for k in range(1, len(sorted_profiles) - 1):
-                        if sorted_profiles[k] <= closeness_coefficient < sorted_profiles[k - 1]:
-                            class_assignment = f'C{k+1}'
-                            break
-                
-                self.classifications.append(class_assignment)
+            # Obtenha os índices ordenados dos coeficientes de proximidade dos perfis
+            # Isso é importante se a ordem dos perfis não estiver garantida
+            sorted_profile_indices = sorted(range(len(self.profiles_closeness_coefficients)), 
+                                            key=lambda k: self.profiles_closeness_coefficients[k], reverse=True)
+
+            for i, coefficient in enumerate(self.closeness_coefficients):
+                if coefficient >= self.profiles_closeness_coefficients[sorted_profile_indices[0]]:
+                    self.classifications[i] = 'C1'
+                elif coefficient < self.profiles_closeness_coefficients[sorted_profile_indices[-1]]:
+                    self.classifications[i] = 'C3'
 
             return self.classifications
 
