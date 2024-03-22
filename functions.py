@@ -29,9 +29,10 @@ class PDTOPSIS_Sort:
             self.decision_matrix = pd.read_csv(self.matrix_values_csv, delimiter=';', header=None)
             self.list_decision_matrix = pd.read_csv(self.matrix_values_csv, delimiter=';', header=None).values.tolist()
             # self.decision_matrix = pd.DataFrame(self.decision_matrix, columns=columns)
-
+            
             return self.decision_matrix
-        
+            
+
         except Exception as e:
             self.errors = self.errors+1
             print(f"An error occurred: {e}")
@@ -53,6 +54,9 @@ class PDTOPSIS_Sort:
 
     def determine_domain(self):
         try:
+            '''
+            Step 3: Determine the domain of each criterion.
+            '''
             self.domain = {
                 'ideal': [],
                 'anti_ideal': []
@@ -172,28 +176,21 @@ class PDTOPSIS_Sort:
     def calculate_complete_decision_matrix(self):
         self.complete_decision_matrix = self.list_decision_matrix
 
-        profiles = [[0.0816, 0.0616], [0.1174, 0.0675], [0.2089, -0.0047], [0.3669, 0.2458], [1.4659, 0.9165], [0.7805, 0.4404], [0.6375, 0.1256], [1.0971, 0.9865], [2.0729, 2.5155], [2.4333, -0.2015]]
+        profiles = [[0.0816, 0.1174, 0.2089, 0.3669, 1.4659, 0.7805, 0.6375, 1.0971, 2.0729, 2.4333],[0.0616, 0.0675, -0.0047, 0.2458, 0.9165, 0.4404, 0.1256, 0.9865, 2.5155, -0.2015]]
         domain = [[i for i in self.domain['ideal']], [i for i in self.domain['anti_ideal']]]
-        
         try:
             '''
             Step 6.1: Create the Complete Decision Matrix by concatenating the decision matrix,
             the boundary profiles, and the domain.
             '''
-            row1 = []
-            row2 = []
-
             for row in profiles:
-                row1.append(row[0])
-                row2.append(row[1])
+                self.complete_decision_matrix.append(row)
 
-            self.complete_decision_matrix.append(row1)
-            self.complete_decision_matrix.append(row2)
             self.complete_decision_matrix.append(domain[0])
             self.complete_decision_matrix.append(domain[1])
 
             return self.complete_decision_matrix
-        
+            
         except Exception as e:
             self.errors = self.errors+1
             print(f"An error occurred: {e}")
@@ -231,7 +228,6 @@ class PDTOPSIS_Sort:
                 # Adicione a linha ponderada à nova lista de resultados
                 self.weighted_normalized_matrix.append(weighted_row)
 
-            self.row_size = len(self.weighted_normalized_matrix)
             self.column_size = len(self.weighted_normalized_matrix[0])
 
             return self.weighted_normalized_matrix
@@ -266,12 +262,17 @@ class PDTOPSIS_Sort:
 
     def calculate_distances(self):
         try:
+            '''
+            Step 6.5: Calculate the Euclidean distances of each alternative and profile
+            for the ideal and anti-ideal solutions.
+            '''
             self.weighted_normalized_matrix = np.array(self.weighted_normalized_matrix)
             self.v_star = np.array(self.v_star)
             self.v_minus = np.array(self.v_minus)
             
-            num_alternatives = 50  # Número de alternativas reais
-            num_profiles = 2       # Número de perfis
+            num_alternatives = len(self.decision_matrix)  # Número de alternativas reais (quantidade de linhas da matriz de decisão = quantidade de alternativas)
+            num_profiles = len(self.complete_decision_matrix) - num_alternatives - 2 # Número de linhas do domínio
+            # (número de linhas da matriz de decisão completa - número de linhas da matriz de decisão - número de linhas do domínio)
             
             # Inicializa as listas para as distâncias
             self.distances_to_ideal = []
@@ -302,6 +303,9 @@ class PDTOPSIS_Sort:
 
     def calculate_closeness_coefficients(self):
         try:
+            '''
+            Step 6.6: Determine the closeness coefficients of each alternative and profile.
+            '''
             # Inicializar as listas para armazenar os coeficientes de proximidade
             self.closeness_coefficients = []
             self.profiles_closeness_coefficients = []
@@ -324,6 +328,10 @@ class PDTOPSIS_Sort:
 
     def classify_alternatives(self):
         try:
+            '''
+            Step 6.7: Classify the alternatives by making comparisons between
+            their closeness coefficients and those of the profiles.
+            '''
             # A última classificação é 'C3', então qualquer coisa abaixo do perfil mais baixo é 'C3'
             # A classificação mais alta é 'C1', então qualquer coisa acima do perfil mais alto é 'C1'
             # Tudo o mais é 'C2'
