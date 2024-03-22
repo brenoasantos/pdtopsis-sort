@@ -129,8 +129,19 @@ if uploaded_files or os.listdir(input_folder_path):  # show button if files are 
             st.info('Distâncias dos perfis para a solução anti-ideal:')
             st.table(df_distances_to_anti_ideal_profiles)
 
-            # calcular os coeficientes de proximidade para cada alternativa e perfil
-            # pdtopsis_sort.calculate_closeness_coefficients()
+            # chamar a função para calcular os coeficientes de proximidade
+            closeness_coefficients, profiles_closeness_coefficients = pdtopsis_sort.calculate_closeness_coefficients()
+
+            # converter as listas de coeficientes de proximidade em DataFrames do Pandas
+            df_closeness_coefficients = pd.DataFrame(closeness_coefficients, columns=['Coeficiente de Proximidade das Alternativas'])
+            df_profiles_closeness_coefficients = pd.DataFrame(profiles_closeness_coefficients, columns=['Coeficiente de Proximidade dos Perfis'])
+
+            # mostrar os DataFrames como tabelas no Streamlit
+            st.info('Coeficientes de proximidade das alternativas:')
+            st.table(df_closeness_coefficients)
+
+            st.info('Coeficientes de proximidade dos perfis:')
+            st.table(df_profiles_closeness_coefficients)
 
             st.info('Classificando as alternativas...')
 

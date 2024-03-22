@@ -301,30 +301,29 @@ class PDTOPSIS_Sort:
             print(f"Ocorreu um erro: {e}")
 
             print(f"Ocorreu um erro: {e}")
-    def calculate_closeness_coefficients(self):
-        try:
-            '''
-            Step 6.6: Calculate the closeness coefficients of each alternative and profile.
-            '''
-            # Inicializar as listas para armazenar os coeficientes de proximidade
-            self.closeness_coefficients = []
-            self.profiles_closeness_coefficients = []
 
-            # Calcular os coeficientes de proximidade para cada alternativa
-            for i in range(n_alternatives):  # m é o número de alternativas
-                closeness_coefficient = self.distances_to_anti_ideal[i] / (self.distances_to_ideal[i] + self.distances_to_anti_ideal[i])
-                self.closeness_coefficients.append(closeness_coefficient)
+def calculate_closeness_coefficients(self):
+    try:
+        # Inicializar as listas para armazenar os coeficientes de proximidade
+        self.closeness_coefficients = []
+        self.profiles_closeness_coefficients = []
 
-            # Calcular os coeficientes de proximidade para cada perfil
-            for k in range(self.q - 1):  # q é o número de perfis + 1
-                profile_closeness_coefficient = self.distances_to_anti_ideal_profiles[k] / (self.distances_to_ideal_profiles[k] + self.distances_to_anti_ideal_profiles[k])
-                self.profiles_closeness_coefficients.append(profile_closeness_coefficient)
+        # Calcular os coeficientes de proximidade para cada alternativa
+        for i in range(len(self.distances_to_ideal)):  # Usa o comprimento da lista de distâncias ideais
+            closeness_coefficient = self.distances_to_anti_ideal[i] / (self.distances_to_ideal[i] + self.distances_to_anti_ideal[i])
+            self.closeness_coefficients.append(closeness_coefficient)
 
-            return self.closeness_coefficients, self.profiles_closeness_coefficients
-        
-        except Exception as e:
-            self.errors = self.errors+1
-            print(f"An error occurred: {e}")
+        # Calcular os coeficientes de proximidade para cada perfil
+        for k in range(len(self.distances_to_ideal_profiles)):  # Usa o comprimento da lista de distâncias ideais dos perfis
+            profile_closeness_coefficient = self.distances_to_anti_ideal_profiles[k] / (self.distances_to_ideal_profiles[k] + self.distances_to_anti_ideal_profiles[k])
+            self.profiles_closeness_coefficients.append(profile_closeness_coefficient)
+
+        return self.closeness_coefficients, self.profiles_closeness_coefficients
+    
+    except Exception as e:
+        self.errors += 1
+        print(f"Ocorreu um erro: {e}")
+
 
     def classify_alternatives(self):
         try:
