@@ -151,8 +151,6 @@ if uploaded_files or os.listdir(input_folder_path):  # show button if files are 
             # Preparar os dados para exibir na tabela mantendo a ordem original das alternativas
             alternatives_data = [{
                 'Alternative': f'a{i+1}',
-                'd*': pdtopsis_sort.distances_to_ideal[i],
-                'd-': pdtopsis_sort.distances_to_anti_ideal[i],
                 'CI(a)': pdtopsis_sort.closeness_coefficients[i],
                 'Sorting': classifications[i]
             } for i in range(len(classifications))]
@@ -163,6 +161,7 @@ if uploaded_files or os.listdir(input_folder_path):  # show button if files are 
             # Mostrar a tabela de classificações no Streamlit
             st.info('Resultados da Classificação das Alternativas:')
             st.table(df_alternatives)
+
 
             if pdtopsis_sort.errors == 0:
                 st.success('PDTOPSIS-Sort executed successfully!')
