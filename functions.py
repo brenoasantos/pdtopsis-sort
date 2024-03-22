@@ -275,7 +275,7 @@ class PDTOPSIS_Sort:
             self.distances_to_anti_ideal = []
 
             # Calcula as distâncias para as alternativas
-            for i in range(m):  # m é o número de alternativas
+            for i in range(50):  # m é o número de alternativas
                 distance_to_ideal = np.sqrt(np.sum((self.weighted_normalized_matrix[i, :] - self.v_star) ** 2))
                 distance_to_anti_ideal = np.sqrt(np.sum((self.weighted_normalized_matrix[i, :] - self.v_minus) ** 2))
                 self.distances_to_ideal.append(distance_to_ideal)
@@ -284,8 +284,8 @@ class PDTOPSIS_Sort:
             # Calcula as distâncias para os perfis
             self.distances_to_ideal_profiles = []
             self.distances_to_anti_ideal_profiles = []
-            for k in range(1, q):  # q é o número de perfis + 1
-                profile_index = k + m - 1  # Índice do perfil na matriz normalizada
+            for k in range(1, 2):  # q é o número de perfis + 1
+                profile_index = k + 50 - 1  # Índice do perfil na matriz normalizada
                 distance_to_ideal_profile = np.sqrt(np.sum((self.weighted_normalized_matrix[profile_index, :] - self.v_star) ** 2))
                 distance_to_anti_ideal_profile = np.sqrt(np.sum((self.weighted_normalized_matrix[profile_index, :] - self.v_minus) ** 2))
                 self.distances_to_ideal_profiles.append(distance_to_ideal_profile)
