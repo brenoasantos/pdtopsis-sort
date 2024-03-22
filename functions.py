@@ -266,14 +266,11 @@ class PDTOPSIS_Sort:
 
     def calculate_distances(self):
         try:
-            '''
-            Step 6.5: Calculate the Euclidean distances from each alternative and profile to the ideal and anti-ideal solutions.
-            '''
-            # Ensure all variables are initialized and not None
+            # Certifique-se de que todas as variáveis estejam inicializadas
             if self.weighted_normalized_matrix is None or self.v_star is None or self.v_minus is None:
-                raise ValueError("Variables not initialized")
-            
-            # Convert lists to NumPy arrays if they are not already
+                raise ValueError("Variáveis não inicializadas")
+
+            # Converta as matrizes para NumPy arrays, se necessário
             if not isinstance(self.weighted_normalized_matrix, np.ndarray):
                 self.weighted_normalized_matrix = np.array(self.weighted_normalized_matrix)
             if not isinstance(self.v_star, np.ndarray):
@@ -281,24 +278,32 @@ class PDTOPSIS_Sort:
             if not isinstance(self.v_minus, np.ndarray):
                 self.v_minus = np.array(self.v_minus)
             
-            # Initialize matrices for storing distances
-            self.distances_to_ideal = np.zeros(self.row_size - 2)
-            self.distances_to_anti_ideal = np.zeros(self.row_size - 2)
+            # Inicializa as listas para as distâncias
+            self.distances_to_ideal = []
+            self.distances_to_anti_ideal = []
 
-            # Use NumPy operations for subtraction and squaring
-            self.distances_to_ideal_mat = np.square(self.weighted_normalized_matrix - self.v_star)
-            self.distances_to_anti_ideal_mat = np.square(self.weighted_normalized_matrix - self.v_minus)
+            # Calcula as distâncias para as alternativas
+            for i in range(m):  # m é o número de alternativas
+                distance_to_ideal = np.sqrt(np.sum((self.weighted_normalized_matrix[i, :] - self.v_star) ** 2))
+                distance_to_anti_ideal = np.sqrt(np.sum((self.weighted_normalized_matrix[i, :] - self.v_minus) ** 2))
+                self.distances_to_ideal.append(distance_to_ideal)
+                self.distances_to_anti_ideal.append(distance_to_anti_ideal)
 
-            # Calculate Euclidean distances
-            self.distances_to_ideal = np.sqrt(np.sum(self.distances_to_ideal_mat, axis=1))
-            self.distances_to_anti_ideal = np.sqrt(np.sum(self.distances_to_anti_ideal_mat, axis=1))
+            # Calcula as distâncias para os perfis
+            self.distances_to_ideal_profiles = []
+            self.distances_to_anti_ideal_profiles = []
+            for k in range(1, q):  # q é o número de perfis + 1
+                profile_index = k + m - 1  # Índice do perfil na matriz normalizada
+                distance_to_ideal_profile = np.sqrt(np.sum((self.weighted_normalized_matrix[profile_index, :] - self.v_star) ** 2))
+                distance_to_anti_ideal_profile = np.sqrt(np.sum((self.weighted_normalized_matrix[profile_index, :] - self.v_minus) ** 2))
+                self.distances_to_ideal_profiles.append(distance_to_ideal_profile)
+                self.distances_to_anti_ideal_profiles.append(distance_to_anti_ideal_profile)
+            return (self.distances_to_ideal, self.distances_to_anti_ideal,
+                    self.distances_to_ideal_profiles, self.distances_to_anti_ideal_profiles)
 
-            return self.distances_to_ideal_mat, self.distances_to_anti_ideal_mat
-                    
         except Exception as e:
             self.errors += 1
-            print(f"An error occurred: {e}")
-
+            print(f"Ocorreu um erro: {e}")
     def calculate_closeness_coefficients(self):
         try:
             '''

@@ -103,10 +103,22 @@ if uploaded_files or os.listdir(input_folder_path):  # show button if files are 
             st.table(pdtopsis_sort.determine_ideal_and_anti_ideal_solutions()[1])
 
 
-            # calcular as distâncias Euclidianas para cada alternativa e perfil
-            pdtopsis_sort.calculate_distances()
-            st.table(pdtopsis_sort.calculate_distances()[0])
-            st.table(pdtopsis_sort.calculate_distances()[1])
+            # Calcular as distâncias Euclidianas para cada alternativa e perfil
+            distances_to_ideal, distances_to_anti_ideal, distances_to_ideal_profiles, distances_to_anti_ideal_profiles = pdtopsis_sort.calculate_distances()
+
+            # Mostrar as distâncias em relação à solução ideal para as alternativas
+            st.info('Distâncias das alternativas para a solução ideal:')
+            st.table(distances_to_ideal)
+
+            # Mostrar as distâncias em relação à solução anti-ideal para as alternativas
+            st.info('Distâncias das alternativas para a solução anti-ideal:')
+            st.table(distances_to_anti_ideal)
+
+            # Se necessário, também mostrar as distâncias dos perfis para as soluções ideais e anti-ideais
+            st.info('Distâncias dos perfis para a solução ideal:')
+            st.table(distances_to_ideal_profiles)
+            st.info('Distâncias dos perfis para a solução anti-ideal:')
+            st.table(distances_to_anti_ideal_profiles)
 
 
             # calcular os coeficientes de proximidade para cada alternativa e perfil
