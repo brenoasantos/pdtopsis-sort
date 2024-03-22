@@ -328,9 +328,6 @@ class PDTOPSIS_Sort:
         try:
             self.classifications = []  # Esta lista armazenará a classificação de cada alternativa
 
-            # A última classificação deve ser 'C3' em vez de 'Cq'
-            last_profile_classification = 'C3'
-
             # Iniciar a classificação
             for i, closeness_coefficient in enumerate(self.closeness_coefficients):
                 # Verifica se a alternativa pertence à melhor classe 'C1'
@@ -338,13 +335,17 @@ class PDTOPSIS_Sort:
                     class_assignment = 'C1'
                 # Verifica se a alternativa pertence à última classe 'C3'
                 elif closeness_coefficient < self.profiles_closeness_coefficients[-1]:
-                    class_assignment = last_profile_classification
+                    class_assignment = 'C3'
                 else:
                     # Verificar as classes intermediárias
                     for k in range(1, len(self.profiles_closeness_coefficients)):
+                        # Se a alternativa estiver entre dois perfis, ela pertence à classe inferior (maior número)
                         if self.profiles_closeness_coefficients[k - 1] > closeness_coefficient >= self.profiles_closeness_coefficients[k]:
                             class_assignment = f'C{k+1}'
                             break
+                    # Assegure-se de que uma classe foi atribuída
+                    if class_assignment is None:
+                        raise ValueError(f'Alternativa {i+1} não foi classificada.')
 
                 self.classifications.append(class_assignment)
 
