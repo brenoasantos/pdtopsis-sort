@@ -266,17 +266,9 @@ class PDTOPSIS_Sort:
 
     def calculate_distances(self):
         try:
-            # Certifique-se de que todas as variáveis estejam inicializadas
-            if self.weighted_normalized_matrix is None or self.v_star is None or self.v_minus is None:
-                raise ValueError("Variáveis não inicializadas")
-
-            # Converta as matrizes para NumPy arrays, se necessário
-            if not isinstance(self.weighted_normalized_matrix, np.ndarray):
-                self.weighted_normalized_matrix = np.array(self.weighted_normalized_matrix)
-            if not isinstance(self.v_star, np.ndarray):
-                self.v_star = np.array(self.v_star)
-            if not isinstance(self.v_minus, np.ndarray):
-                self.v_minus = np.array(self.v_minus)
+            self.weighted_normalized_matrix = np.array(self.weighted_normalized_matrix)
+            self.v_star = np.array(self.v_star)
+            self.v_minus = np.array(self.v_minus)
             
             # Inicializa as listas para as distâncias
             self.distances_to_ideal = []
