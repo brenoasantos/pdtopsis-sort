@@ -145,11 +145,24 @@ if uploaded_files or os.listdir(input_folder_path):  # show button if files are 
 
             st.info('Classificando as alternativas...')
 
-            # st.write(pdtopsis_sort.classify_alternatives())
+            # chamar a função para classificar as alternativas
+            classifications = pdtopsis_sort.classify_alternatives()
 
-            # # apresentar os resultados finais
-            # for i, classification in enumerate(classifications):
-            #     print(f'Alternativa {i + 1}: Classe {classification}')
+            # preparar os dados para exibir na tabela
+            alternatives_data = []
+            for i, coefficient in enumerate(pdtopsis_sort.closeness_coefficients):
+                alternatives_data.append({
+                    'Alternative': f'a{i+1}',
+                    'CI(a)': coefficient,
+                    'Sorting': classifications[i]
+                })
+
+            # converter os dados das alternativas em um DataFrame do Pandas
+            df_alternatives = pd.DataFrame(alternatives_data)
+
+            # mostrar a tabela de classificações no Streamlit
+            st.info('Resultados da Classificação das Alternativas:')
+            st.table(df_alternatives)
 
             if pdtopsis_sort.errors == 0:
                 st.success('PDTOPSIS-Sort executed successfully!')

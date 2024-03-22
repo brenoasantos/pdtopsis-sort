@@ -327,43 +327,35 @@ class PDTOPSIS_Sort:
 
     def classify_alternatives(self):
         try:
-            '''
-            Step 6.7: Classify the alternatives by making comparisons between their closeness coefficients.
-            '''
-            # supondo que self.profiles_closeness_coefficients seja uma lista ordenada dos coeficientes de proximidade dos perfis
-            # supondo também que self.closeness_coefficients contém os coeficientes de proximidade das alternativas
+            # Certifique-se de que as listas de coeficientes estão corretamente ordenadas
+            self.closeness_coefficients = sorted(self.closeness_coefficients, reverse=True)
+            self.profiles_closeness_coefficients = sorted(self.profiles_closeness_coefficients, reverse=True)
+            
             self.classifications = []  # Esta lista irá armazenar a classificação de cada alternativa
 
-            # iniciar a classificação
-            for closeness_coefficient in self.closeness_coefficients:
-                # inicialmente, supõe-se que a alternativa não está classificada em nenhuma classe
-                class_assignment = None
+            # Iniciar a classificação
+            for i, closeness_coefficient in enumerate(self.closeness_coefficients):
+                class_assignment = None  # A alternativa começa sem classificação
 
-                # verificar se a alternativa pertence à melhor classe C1
+                # Classificar as alternativas comparando com os coeficientes dos perfis
                 if closeness_coefficient >= self.profiles_closeness_coefficients[0]:
                     class_assignment = 'C1'
-
-                # verificar se a alternativa pertence à pior classe Cq
                 elif closeness_coefficient < self.profiles_closeness_coefficients[-1]:
                     class_assignment = 'Cq'
-
-                # se não, verificar as classes intermediárias
                 else:
                     for k in range(1, len(self.profiles_closeness_coefficients)):
-                        if self.profiles_closeness_coefficients[k-1] > closeness_coefficient >= self.profiles_closeness_coefficients[k]:
+                        if self.profiles_closeness_coefficients[k - 1] > closeness_coefficient >= self.profiles_closeness_coefficients[k]:
                             class_assignment = f'C{k+1}'
                             break
-
-                # se, após as verificações, ainda não tiver sido possível classificar a alternativa
-                # isso indicaria um erro na lógica ou nos dados
+                
+                # Se uma classificação não foi encontrada, indique um erro
                 if class_assignment is None:
-                    raise ValueError('Não foi possível classificar a alternativa com base nos coeficientes de proximidade fornecidos.')
-
+                    raise ValueError(f'Não foi possível classificar a alternativa {i + 1} com base nos coeficientes de proximidade fornecidos.')
+                
                 self.classifications.append(class_assignment)
 
-            # retornar as classificações
             return self.classifications
-        
+
         except Exception as e:
-            self.errors = self.errors+1
-            print(f"An error occurred: {e}")
+            self.errors += 1
+            print(f"Ocorreu um erro: {e}")
