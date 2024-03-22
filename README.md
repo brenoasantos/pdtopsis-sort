@@ -11,27 +11,19 @@ Preference Disaggregation Technique for Order Preferences by Similarity to Ideal
 This project implements the PDTOPSIS-Sort algorithm, which is a Preference Disaggregation Technique for Order Preferences by Similarity to Ideal Solution (PDTOPSIS). It is designed to support Multi-Criteria Decision Making (MCDM).
 
 ## Installation
-To run the application locally, follow these steps:
+To run the application locally, follow these steps (bash):
 
 1. Install streamlit:
-	```shell
-	pip install streamlit
-	```
+	```pip3 install streamlit```
 
 2. Create a virtual environment:
-	```shell
-	python3 -m venv streamlit_env
-	```
+	```python3 -m venv streamlit_env```
 
 3. Activate the virtual environment:
-	```shell
-	source streamlit_env/bin/activate
-	```
+	```source streamlit_env/bin/activate```
 
 4. Install the required libraries:
-	```shell
-	pip3 install -r requirements.txt
-	```
+	```pip3 install -r requirements.txt```
 
 ## Usage
 To run the interface, use the following command:
