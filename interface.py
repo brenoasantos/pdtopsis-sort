@@ -32,11 +32,6 @@ uploaded_files = st.file_uploader('Choose a CSV file', accept_multiple_files=Tru
 for uploaded_file in uploaded_files:
     bytes_data = uploaded_file.read()
 
-    # # generate a unique filename to avoid overwriting
-    # filename = os.path.splitext(uploaded_file.name)[0]  # extract filename without extension
-    # extension = os.path.splitext(uploaded_file.name)[1]  # get file extension
-    # unique_filename = f'{filename}_{int(time.time())}{extension}'  # add timestamp for uniqueness
-
     # save the uploaded file to the 'app_input' folder
     with open(os.path.join(input_folder_path, uploaded_file.name), 'wb') as f:
         f.write(bytes_data)
@@ -121,7 +116,6 @@ if uploaded_files or os.listdir(input_folder_path):  # show button if files are 
             df_distances_to_ideal_profiles = pd.DataFrame(distances_to_ideal_profiles, columns=['Distância dos Perfis para a Solução Ideal'])
             df_distances_to_anti_ideal_profiles = pd.DataFrame(distances_to_anti_ideal_profiles, columns=['Distância dos Perfis para a Solução Anti-Ideal'])
 
-            # mostrar os DataFrames como tabelas no Streamlit
             st.info('Distâncias das alternativas para a solução ideal:')
             st.table(df_distances_to_ideal)
 
@@ -134,14 +128,11 @@ if uploaded_files or os.listdir(input_folder_path):  # show button if files are 
             st.info('Distâncias dos perfis para a solução anti-ideal:')
             st.table(df_distances_to_anti_ideal_profiles)
 
-            # chamar a função para calcular os coeficientes de proximidade
             closeness_coefficients, profiles_closeness_coefficients = pdtopsis_sort.calculate_closeness_coefficients()
 
-            # converter as listas de coeficientes de proximidade em DataFrames do Pandas
             df_closeness_coefficients = pd.DataFrame(closeness_coefficients, columns=['Coeficiente de Proximidade das Alternativas'])
             df_profiles_closeness_coefficients = pd.DataFrame(profiles_closeness_coefficients, columns=['Coeficiente de Proximidade dos Perfis'])
 
-            # mostrar os DataFrames como tabelas no Streamlit
             st.info('Coeficientes de proximidade das alternativas:')
             st.table(df_closeness_coefficients)
 
@@ -150,34 +141,30 @@ if uploaded_files or os.listdir(input_folder_path):  # show button if files are 
 
             st.info('Classificando as alternativas')
 
-            # Chamar a função para classificar as alternativas
             classifications = pdtopsis_sort.classify_alternatives()
 
-            # Preparar os dados para exibir na tabela mantendo a ordem original das alternativas e adicionando perfis
+            # prepara os dados para exibir na tabela mantendo a ordem original das alternativas e adicionando perfis
             alternatives_data = [{
                 'Alternativa': f'a{i+1}',
                 'd*': pdtopsis_sort.distances_to_ideal[i],
                 'd-': pdtopsis_sort.distances_to_anti_ideal[i],
                 'CI(a)': pdtopsis_sort.closeness_coefficients[i],
                 'Classificação': classifications[i]
-            } for i in range(len(classifications))]  # Itera apenas pelo número de alternativas
+            } for i in range(len(classifications))]
 
-            # Adiciona os perfis no final da lista com suas distâncias e coeficientes, mas sem classificação para Sorting
+            # adiciona os perfis no final da lista com suas distâncias e coeficientes, mas sem classificação para Sorting
             for i in range(len(pdtopsis_sort.distances_to_ideal_profiles)):
                 alternatives_data.append({
                     'Alternativa': f'Profile {i+1}',
                     'd*': pdtopsis_sort.distances_to_ideal_profiles[i],
                     'd-': pdtopsis_sort.distances_to_anti_ideal_profiles[i],
                     'CI(a)': pdtopsis_sort.profiles_closeness_coefficients[i],
-                    'Classificação': ''  # Classificação vazia para perfis
+                    'Classificação': ''  # classificação vazia para perfis
                 })
 
-            # Converter os dados das alternativas e perfis em um DataFrame do Pandas
             df_alternatives = pd.DataFrame(alternatives_data)
 
-            # Mostrar a tabela de classificações no Streamlit
             st.table(df_alternatives)
-
 
             if pdtopsis_sort.errors == 0:
                 st.success('PDTOPSIS-Sort executed successfully!')
