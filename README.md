@@ -10,6 +10,17 @@ Preference Disaggregation Technique for Order Preferences by Similarity to Ideal
 ## Project Description
 This project implements the PDTOPSIS-Sort algorithm, which is a Preference Disaggregation Technique for Order Preferences by Similarity to Ideal Solution (PDTOPSIS). It is designed to support Multi-Criteria Decision Making (MCDM).
 
+### PDTOPSIS-Sort algorithm - Step by step:
+1. Determine the Decision Matrix
+2. Define the set of Reference Alternative
+3. Determine the domain of each criterion
+4. Infer the boundary profiles and the weights
+5. Validate the parameters inferred in Step 4, before classifying the alternatives
+6. Sorting process (more details in the paper)
+7. Perform a sensitivity analysis over the results of the classification
+
+
+
 ## Installation
 To run the application locally, follow these steps (bash):
 
@@ -25,10 +36,13 @@ To run the application locally, follow these steps (bash):
 4. Install the required libraries:
 	```pip3 install -r requirements.txt```
 
+## Link for the application in production:
+[TOPSIS-Sort](https://pdtopsis-sort.onrender.com/)
+
 ## Usage
 To run the interface, use the following command:
 
 `streamlit run interface.py`
 
-## OBS
-This project has in issue in the step 4. The parameters are predetermined, as traditional Topsis method.
+## Limitations
+This project has in issue in the step 4. The parameters are predetermined, as traditional Topsis method. In our program the number of classes is set to exactly 3, and they need to be named C1, C2 and C3.
