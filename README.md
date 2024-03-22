@@ -44,5 +44,13 @@ To run the interface, use the following command:
 
 `streamlit run interface.py`
 
+After running the interface, it is necessary to attach the `input.csv` and `matrixValues.csv` files.
+
 ## Limitations
-This project has in issue in the step 4. The parameters are predetermined, as traditional Topsis method. In our program the number of classes is set to exactly 3, and they need to be named C1, C2 and C3.
+This project has in issue in the step 4. The parameters are predetermined, as traditional TOPSIS method. In our program the number of classes is set to exactly 3, and they need to be named C1, C2 and C3.
+
+## Suggestions
+Use the CVXPY library to solve the problem in step 4. In the code itself, the library is already being imported, but it is commented.
+
+## Improvement opportunities
+Make the alternative classification phase dynamic. The way we did it, we treated the inputs with a single format: with three classes (C1, C2, C3).
