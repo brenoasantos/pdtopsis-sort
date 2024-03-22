@@ -215,7 +215,7 @@ class PDTOPSIS_Sort:
             print(f"An error occurred: {e}")
 
     def calculate_weighted_normalized_decision_matrix(self):
-        weights = [0.0079, 0.0099, 0.0170, 0.1187, 0.1664, 0.1486, 0.2382,  0.1292, 2.1462, 0.0180]
+        weights = [0.0079, 0.0099, 0.0170, 0.1187, 0.1664, 0.1486, 0.2382,  0.1292, 0.1462, 0.0180]
 
         try:
             '''
@@ -298,8 +298,6 @@ class PDTOPSIS_Sort:
 
         except Exception as e:
             self.errors += 1
-            print(f"Ocorreu um erro: {e}")
-
             print(f"Ocorreu um erro: {e}")
 
     def calculate_closeness_coefficients(self):

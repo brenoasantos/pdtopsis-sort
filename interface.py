@@ -148,18 +148,30 @@ if uploaded_files or os.listdir(input_folder_path):  # show button if files are 
             # Chamar a função para classificar as alternativas
             classifications = pdtopsis_sort.classify_alternatives()
 
-            # Preparar os dados para exibir na tabela mantendo a ordem original das alternativas
+            # Preparar os dados para exibir na tabela mantendo a ordem original das alternativas e adicionando perfis
             alternatives_data = [{
                 'Alternative': f'a{i+1}',
+                'd*': pdtopsis_sort.distances_to_ideal[i],
+                'd-': pdtopsis_sort.distances_to_anti_ideal[i],
                 'CI(a)': pdtopsis_sort.closeness_coefficients[i],
                 'Sorting': classifications[i]
-            } for i in range(len(classifications))]
+            } for i in range(len(classifications))]  # Itera apenas pelo número de alternativas
 
-            # Converter os dados das alternativas em um DataFrame do Pandas
+            # Adiciona os perfis no final da lista com suas distâncias e coeficientes, mas sem classificação para Sorting
+            for i in range(len(pdtopsis_sort.distances_to_ideal_profiles)):
+                alternatives_data.append({
+                    'Alternative': f'Profile {i+1}',
+                    'd*': pdtopsis_sort.distances_to_ideal_profiles[i],
+                    'd-': pdtopsis_sort.distances_to_anti_ideal_profiles[i],
+                    'CI(a)': pdtopsis_sort.profiles_closeness_coefficients[i],
+                    'Sorting': ''  # Classificação vazia para perfis
+                })
+
+            # Converter os dados das alternativas e perfis em um DataFrame do Pandas
             df_alternatives = pd.DataFrame(alternatives_data)
 
             # Mostrar a tabela de classificações no Streamlit
-            st.info('Resultados da Classificação das Alternativas:')
+            st.info('Resultados da Classificação das Alternativas e Perfis:')
             st.table(df_alternatives)
 
 
