@@ -23,7 +23,6 @@ input_folder_path = 'app_input/'
 
 if not os.path.exists(input_folder_path):
     os.makedirs(input_folder_path)
-    # st.info(f'Created folder: {input_folder_path}')
 
 st.title('PDTOPSIS-Sort')
 
