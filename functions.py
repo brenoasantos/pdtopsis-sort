@@ -10,8 +10,8 @@ class PDTOPSIS_Sort:
         self.decision_matrix = None
         self.reference_set = None
         self.domain = None
-        self.weights = None
-        self.profiles = None
+        self.weights = [0.0079, 0.0099, 0.0170, 0.1187, 0.1664, 0.1486, 0.2382,  0.1292, 0.1462, 0.0180]
+        self.profiles = [[0.0816, 0.1174, 0.2089, 0.3669, 1.4659, 0.7805, 0.6375, 1.0971, 2.0729, 2.4333],[0.0616, 0.0675, -0.0047, 0.2458, 0.9165, 0.4404, 0.1256, 0.9865, 2.5155, -0.2015]]
         self.errors = 0
 
         # load data
@@ -58,14 +58,14 @@ class PDTOPSIS_Sort:
             Step 3: Determine the domain of each criterion.
             '''
             self.domain = {
-                'ideal': [],
-                'anti_ideal': []
+                'a*': [],
+                'a-': []
             }
 
             # carrega o dicionário com valores máximos e mínimos de cada critério
             for label, content in self.decision_matrix.items():
-                self.domain['ideal'].append(max(content))
-                self.domain['anti_ideal'].append(min(content))
+                self.domain['a*'].append(max(content))
+                self.domain['a-'].append(min(content))
             
             return self.domain
 
@@ -176,14 +176,13 @@ class PDTOPSIS_Sort:
     def calculate_complete_decision_matrix(self):
         self.complete_decision_matrix = self.list_decision_matrix
 
-        profiles = [[0.0816, 0.1174, 0.2089, 0.3669, 1.4659, 0.7805, 0.6375, 1.0971, 2.0729, 2.4333],[0.0616, 0.0675, -0.0047, 0.2458, 0.9165, 0.4404, 0.1256, 0.9865, 2.5155, -0.2015]]
-        domain = [[i for i in self.domain['ideal']], [i for i in self.domain['anti_ideal']]]
+        domain = [[i for i in self.domain['a*']], [i for i in self.domain['a-']]]
         try:
             '''
             Step 6.1: Create the Complete Decision Matrix by concatenating the decision matrix,
             the boundary profiles, and the domain.
             '''
-            for row in profiles:
+            for row in self.profiles:
                 self.complete_decision_matrix.append(row)
 
             self.complete_decision_matrix.append(domain[0])
@@ -212,8 +211,6 @@ class PDTOPSIS_Sort:
             print(f"An error occurred: {e}")
 
     def calculate_weighted_normalized_decision_matrix(self):
-        weights = [0.0079, 0.0099, 0.0170, 0.1187, 0.1664, 0.1486, 0.2382,  0.1292, 0.1462, 0.0180]
-
         try:
             '''
             Step 6.3: Calculate the weighted and normalized Decision Matrix.
@@ -223,7 +220,7 @@ class PDTOPSIS_Sort:
             # Itere sobre cada linha da matriz normalizada
             for row in self.normalized_matrix:
             # Multiplique cada elemento (valor de critério) pelo peso correspondente
-                weighted_row = [value*weights[i] for i, value in enumerate(row)]
+                weighted_row = [value*self.weights[i] for i, value in enumerate(row)]
 
                 # Adicione a linha ponderada à nova lista de resultados
                 self.weighted_normalized_matrix.append(weighted_row)

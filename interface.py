@@ -50,34 +50,36 @@ if uploaded_files or os.listdir(input_folder_path):  # show button if files are 
             pdtopsis_sort = main.main()
 
             # first step
-            st.info('Construindo a matriz de decisão...')
+            st.info('Construindo a matriz de decisão')
 
             st.table(pdtopsis_sort.load_data())
 
             # second step
-            st.info('Criando tabela de referências...')
+            st.info('Criando tabela de referências')
 
             ref_df = pd.DataFrame(pdtopsis_sort.create_ref_set(), columns=['Alternativa', 'Classe'])
             st.table(ref_df)
 
             # third step
-            st.info('Determinando os domínios...')
+            st.info('Determinando os domínios')
 
             domain_df = pd.DataFrame(pdtopsis_sort.determine_domain())
             st.table(domain_df)
 
             # fourth step
-            st.info('Inferindo pesos e perfis de limite...')
+            st.info('Inferindo pesos e perfis de limite')
 
-            # pdtopsis_sort.infer_parameters()
-            # weights_df = pdtopsis_sort.infer_parameters()[0]
-            # profiles_df = pdtopsis_sort.infer_parameters()[1]
+            weights_df = pd.DataFrame(np.array(pdtopsis_sort.weights).reshape(1, -1))
+            profiles_df = pd.DataFrame(pdtopsis_sort.profiles)
 
-            # st.table(weights_df)
-            # st.table(profiles_df)
+            st.write('Pesos')
+            st.table(weights_df)
+
+            st.write('Perfis')
+            st.table(profiles_df)
             
             # sixth step
-            st.info('Matriz de decisão completa...')
+            st.info('Matriz de decisão completa')
 
             # criar a matriz de decisão completa concatenando X, P e D
             cdm_df = pd.DataFrame(pdtopsis_sort.calculate_complete_decision_matrix())
@@ -85,7 +87,7 @@ if uploaded_files or os.listdir(input_folder_path):  # show button if files are 
             st.table(cdm_df)
 
             # normalizar a matriz de decisão completa
-            st.info('Normalizando a matriz de decisão...')
+            st.info('Normalizando a matriz de decisão')
 
             normalized_dm_df = pd.DataFrame(pdtopsis_sort.normalize_decision_matrix())
 
@@ -99,7 +101,10 @@ if uploaded_files or os.listdir(input_folder_path):  # show button if files are 
 
             st.info('Determinando as soluções ideal e anti-ideal')
 
+            st.write('Ideal')
             st.table(pdtopsis_sort.determine_ideal_and_anti_ideal_solutions()[0])
+            
+            st.write('Anti-deal')
             st.table(pdtopsis_sort.determine_ideal_and_anti_ideal_solutions()[1])
 
 
@@ -111,10 +116,10 @@ if uploaded_files or os.listdir(input_folder_path):  # show button if files are 
             distances_to_anti_ideal_profiles = distances_results[3]
 
             # converter as listas de distâncias em DataFrames do Pandas
-            df_distances_to_ideal = pd.DataFrame(distances_to_ideal, columns=['Distância à Solução Ideal'])
-            df_distances_to_anti_ideal = pd.DataFrame(distances_to_anti_ideal, columns=['Distância à Solução Anti-Ideal'])
-            df_distances_to_ideal_profiles = pd.DataFrame(distances_to_ideal_profiles, columns=['Distância dos Perfis à Solução Ideal'])
-            df_distances_to_anti_ideal_profiles = pd.DataFrame(distances_to_anti_ideal_profiles, columns=['Distância dos Perfis à Solução Anti-Ideal'])
+            df_distances_to_ideal = pd.DataFrame(distances_to_ideal, columns=['Distância para a Solução Ideal'])
+            df_distances_to_anti_ideal = pd.DataFrame(distances_to_anti_ideal, columns=['Distância para a Solução Anti-Ideal'])
+            df_distances_to_ideal_profiles = pd.DataFrame(distances_to_ideal_profiles, columns=['Distância dos Perfis para a Solução Ideal'])
+            df_distances_to_anti_ideal_profiles = pd.DataFrame(distances_to_anti_ideal_profiles, columns=['Distância dos Perfis para a Solução Anti-Ideal'])
 
             # mostrar os DataFrames como tabelas no Streamlit
             st.info('Distâncias das alternativas para a solução ideal:')
@@ -143,35 +148,34 @@ if uploaded_files or os.listdir(input_folder_path):  # show button if files are 
             st.info('Coeficientes de proximidade dos perfis:')
             st.table(df_profiles_closeness_coefficients)
 
-            st.info('Classificando as alternativas...')
+            st.info('Classificando as alternativas')
 
             # Chamar a função para classificar as alternativas
             classifications = pdtopsis_sort.classify_alternatives()
 
             # Preparar os dados para exibir na tabela mantendo a ordem original das alternativas e adicionando perfis
             alternatives_data = [{
-                'Alternative': f'a{i+1}',
+                'Alternativa': f'a{i+1}',
                 'd*': pdtopsis_sort.distances_to_ideal[i],
                 'd-': pdtopsis_sort.distances_to_anti_ideal[i],
                 'CI(a)': pdtopsis_sort.closeness_coefficients[i],
-                'Sorting': classifications[i]
+                'Classificação': classifications[i]
             } for i in range(len(classifications))]  # Itera apenas pelo número de alternativas
 
             # Adiciona os perfis no final da lista com suas distâncias e coeficientes, mas sem classificação para Sorting
             for i in range(len(pdtopsis_sort.distances_to_ideal_profiles)):
                 alternatives_data.append({
-                    'Alternative': f'Profile {i+1}',
+                    'Alternativa': f'Profile {i+1}',
                     'd*': pdtopsis_sort.distances_to_ideal_profiles[i],
                     'd-': pdtopsis_sort.distances_to_anti_ideal_profiles[i],
                     'CI(a)': pdtopsis_sort.profiles_closeness_coefficients[i],
-                    'Sorting': ''  # Classificação vazia para perfis
+                    'Classificação': ''  # Classificação vazia para perfis
                 })
 
             # Converter os dados das alternativas e perfis em um DataFrame do Pandas
             df_alternatives = pd.DataFrame(alternatives_data)
 
             # Mostrar a tabela de classificações no Streamlit
-            st.info('Resultados da Classificação das Alternativas e Perfis:')
             st.table(df_alternatives)
 
 
@@ -184,8 +188,8 @@ if uploaded_files or os.listdir(input_folder_path):  # show button if files are 
         except Exception as e:
             st.error(f'An error occurred: {e}')
 
-# for file in os.listdir(input_folder_path):
-#     path = input_folder_path+file
-#     os.remove(path)
+for file in os.listdir(input_folder_path):
+    path = input_folder_path+file
+    os.remove(path)
 
-# os.rmdir(input_folder_path)
+os.rmdir(input_folder_path)
