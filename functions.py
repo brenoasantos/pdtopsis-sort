@@ -326,28 +326,26 @@ class PDTOPSIS_Sort:
 
     def classify_alternatives(self):
         try:
+            # Certifique-se de que os coeficientes dos perfis estão em ordem decrescente
+            sorted_profiles = sorted(self.profiles_closeness_coefficients, reverse=True)
+
             self.classifications = []  # Esta lista armazenará a classificação de cada alternativa
 
-            # Iniciar a classificação
+            # Classificar as alternativas
             for i, closeness_coefficient in enumerate(self.closeness_coefficients):
-                # Verifica se a alternativa pertence à melhor classe 'C1'
-                if closeness_coefficient >= self.profiles_closeness_coefficients[0]:
+                # Verificar se a alternativa pertence à melhor classe 'C1'
+                if closeness_coefficient >= sorted_profiles[0]:
                     class_assignment = 'C1'
-                # Verifica se a alternativa pertence à última classe 'C3'
-                elif closeness_coefficient < self.profiles_closeness_coefficients[-1]:
+                # Verificar se a alternativa pertence à última classe 'C3'
+                elif closeness_coefficient < sorted_profiles[-1]:
                     class_assignment = 'C3'
                 else:
                     # Verificar as classes intermediárias
-                    for k in range(1, len(self.profiles_closeness_coefficients) - 1):
-                        # Este loop agora verifica corretamente para todas as classificações intermediárias
-                        if self.profiles_closeness_coefficients[k] <= closeness_coefficient < self.profiles_closeness_coefficients[k - 1]:
+                    for k in range(1, len(sorted_profiles) - 1):
+                        if sorted_profiles[k] <= closeness_coefficient < sorted_profiles[k - 1]:
                             class_assignment = f'C{k+1}'
                             break
-
-                # Se uma classificação não foi encontrada, isso é um erro
-                if class_assignment is None:
-                    raise ValueError(f'Alternativa {i+1} não foi classificada.')
-
+                
                 self.classifications.append(class_assignment)
 
             return self.classifications
@@ -355,3 +353,4 @@ class PDTOPSIS_Sort:
         except Exception as e:
             self.errors += 1
             print(f"Ocorreu um erro: {e}")
+
