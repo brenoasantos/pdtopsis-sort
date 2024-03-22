@@ -338,14 +338,15 @@ class PDTOPSIS_Sort:
                     class_assignment = 'C3'
                 else:
                     # Verificar as classes intermediárias
-                    for k in range(1, len(self.profiles_closeness_coefficients)):
-                        # Se a alternativa estiver entre dois perfis, ela pertence à classe inferior (maior número)
-                        if self.profiles_closeness_coefficients[k - 1] > closeness_coefficient >= self.profiles_closeness_coefficients[k]:
+                    for k in range(1, len(self.profiles_closeness_coefficients) - 1):
+                        # Este loop agora verifica corretamente para todas as classificações intermediárias
+                        if self.profiles_closeness_coefficients[k] <= closeness_coefficient < self.profiles_closeness_coefficients[k - 1]:
                             class_assignment = f'C{k+1}'
                             break
-                    # Assegure-se de que uma classe foi atribuída
-                    if class_assignment is None:
-                        raise ValueError(f'Alternativa {i+1} não foi classificada.')
+
+                # Se uma classificação não foi encontrada, isso é um erro
+                if class_assignment is None:
+                    raise ValueError(f'Alternativa {i+1} não foi classificada.')
 
                 self.classifications.append(class_assignment)
 
